@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import L from 'leaflet';
 import { Activity, UserProfile, Lap } from '../types';
@@ -21,7 +20,8 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
 
 const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, user }) => {
   const [seconds, setSeconds] = useState(0);
-  const [distance, setDistance] = useState(0);
+  const [gpsDistance, setGpsDistance] = useState(0); // Distância do GPS
+  const [manualDistance, setManualDistance] = useState(0); // Distância manual para esteira
   const [isPaused, setIsPaused] = useState(false);
   const [route, setRoute] = useState<[number, number][]>([]);
   const [laps, setLaps] = useState<Lap[]>([]);
@@ -39,8 +39,10 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
   const timerRef = useRef<number | null>(null);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
-  // Buffer para suavizar o Pace (Média móvel dos últimos 5 pontos)
-  const speedBuffer = useRef<number[]>([]);
+  const isTreadmillMode = workoutConfig.terrain === 'Esteira';
+
+  // Distância total atual, baseada no modo (GPS ou manual)
+  const currentTotalDistance = isTreadmillMode ? manualDistance : gpsDistance;
 
   // Text-to-Speech Helper
   const speakStats = (km: number, time: string, pace: string) => {
@@ -73,9 +75,9 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
     };
   }, []);
 
-  // Map Init
+  // Map Init (only if not treadmill mode)
   useEffect(() => {
-    if (!mapRef.current) {
+    if (!isTreadmillMode && !mapRef.current) {
       mapRef.current = L.map('live-map', {
         zoomControl: false,
         attributionControl: false
@@ -103,7 +105,14 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
         fillOpacity: 1
       }).addTo(mapRef.current);
     }
-  }, []);
+    // Cleanup map if switching to treadmill mode or unmounting
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, [isTreadmillMode]);
 
   const timeStr = useMemo(() => {
     const h = Math.floor(seconds / 3600);
@@ -114,86 +123,90 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
 
   // Pace Calculation (Smoothed)
   const paceStr = useMemo(() => {
-    if (distance < 0.1 || seconds < 10) return "0'00\"";
+    if (currentTotalDistance < 0.1 || seconds < 10) return "0'00\"";
     
-    // Calcula pace baseado na distância total e tempo total para média geral estável
-    const avgPaceDecimal = (seconds / 60) / distance;
+    const avgPaceDecimal = (seconds / 60) / currentTotalDistance;
     
-    // Se quiser pace instantâneo, usaria currentSpeed, mas pace médio é mais útil para o atleta amador
-    // Vamos usar Pace Médio Geral para exibição principal
     const mins = Math.floor(avgPaceDecimal);
     const secs = Math.round((avgPaceDecimal - mins) * 60);
     return `${mins}'${secs < 10 ? '0' + secs : secs}"`;
-  }, [distance, seconds]);
+  }, [currentTotalDistance, seconds]);
 
   // Main Tracking Logic
   useEffect(() => {
     if (!isPaused) {
       timerRef.current = window.setInterval(() => setSeconds(s => s + 1), 1000);
       
-      const watchId = navigator.geolocation.watchPosition(
-        (pos) => {
-          const { latitude, longitude, accuracy, speed } = pos.coords;
-          const newCoord: [number, number] = [latitude, longitude];
-          setGpsAccuracy(accuracy);
+      let watchId: number | undefined;
 
-          // Filtro de Precisão: Ignora pontos com precisão pior que 25 metros
-          if (accuracy > 25) return;
+      if (!isTreadmillMode) { // Only watch GPS if not in treadmill mode
+        watchId = navigator.geolocation.watchPosition(
+          (pos) => {
+            const { latitude, longitude, accuracy, speed } = pos.coords;
+            const newCoord: [number, number] = [latitude, longitude];
+            setGpsAccuracy(accuracy);
 
-          if (lastPosRef.current) {
-            const d = getDistance(
-              lastPosRef.current.coords.latitude, 
-              lastPosRef.current.coords.longitude, 
-              latitude, 
-              longitude
-            );
-            
-            // Filtro de Jitter (Ruído):
-            // Ignora movimentos menores que 4 metros (0.004km) para evitar "andar parado"
-            // Filtro de Teleporte:
-            // Ignora se a velocidade implícita for > 35km/h (aprox 10m/s) em um intervalo curto
-            const timeDelta = (pos.timestamp - lastPosRef.current.timestamp) / 1000; // segundos
-            const impliedSpeed = (d * 1000) / timeDelta; // m/s
+            // Filtro de Precisão: Ignora pontos com precisão pior que 25 metros
+            if (accuracy > 25) return;
 
-            if (d > 0.004 && impliedSpeed < 10) { 
-              const newTotalDist = distance + d;
-              setDistance(newTotalDist);
-              setRoute(prev => [...prev, newCoord]);
-              if (speed !== null) setCurrentSpeed(speed * 3.6); // m/s to km/h
+            if (lastPosRef.current) {
+              const d = getDistance(
+                lastPosRef.current.coords.latitude, 
+                lastPosRef.current.coords.longitude, 
+                latitude, 
+                longitude
+              );
+              
+              // Filtro de Jitter (Ruído):
+              // Ignora movimentos menores que 4 metros (0.004km) para evitar "andar parado"
+              // Filtro de Teleporte:
+              // Ignora se a velocidade implícita for > 35km/h (aprox 10m/s) em um intervalo curto
+              const timeDelta = (pos.timestamp - lastPosRef.current.timestamp) / 1000; // segundos
+              const impliedSpeed = (d * 1000) / timeDelta; // m/s
 
-              // Lap Logic
-              const currentKm = Math.floor(newTotalDist);
-              if (currentKm > lastKmMarked) {
-                setLastKmMarked(currentKm);
-                const lapData = { km: currentKm, time: timeStr, pace: paceStr };
-                setLaps(prev => [...prev, lapData]);
-                speakStats(currentKm, timeStr, paceStr);
+              if (d > 0.004 && impliedSpeed < 10) { 
+                const newTotalDist = gpsDistance + d;
+                setGpsDistance(newTotalDist); // Update GPS distance
+                setRoute(prev => [...prev, newCoord]);
+                if (speed !== null) setCurrentSpeed(speed * 3.6); // m/s to km/h
               }
             }
-          }
 
-          // Map Updates (always update visuals even if distance is filtered for smoothness)
-          if (mapRef.current && polylineRef.current && markerRef.current) {
-            mapRef.current.panTo(newCoord, { animate: true, duration: 1 });
-            polylineRef.current.addLatLng(newCoord);
-            markerRef.current.setLatLng(newCoord);
+            // Map Updates (always update visuals even if distance is filtered for smoothness)
+            if (mapRef.current && polylineRef.current && markerRef.current) {
+              mapRef.current.panTo(newCoord, { animate: true, duration: 1 });
+              polylineRef.current.addLatLng(newCoord);
+              markerRef.current.setLatLng(newCoord);
+            }
+            lastPosRef.current = pos;
+          }, 
+          (err) => console.warn("GPS Error:", err), 
+          { 
+            enableHighAccuracy: true, 
+            timeout: 10000, 
+            maximumAge: 5000 
           }
-          lastPosRef.current = pos;
-        }, 
-        (err) => console.warn("GPS Error:", err), 
-        { 
-          enableHighAccuracy: true, 
-          timeout: 10000, 
-          maximumAge: 5000 
-        }
-      );
+        );
+      }
 
       return () => {
         if (timerRef.current) clearInterval(timerRef.current);
-        navigator.geolocation.clearWatch(watchId);
+        if (watchId !== undefined) navigator.geolocation.clearWatch(watchId);
       };
     }
-  }, [isPaused, distance, lastKmMarked, voiceEnabled, timeStr, paceStr]);
+  }, [isPaused, gpsDistance, isTreadmillMode]); // Dependências atualizadas
+
+  // Lap Logic (uses currentTotalDistance)
+  useEffect(() => {
+    const currentKm = Math.floor(currentTotalDistance);
+    if (currentKm > lastKmMarked) {
+      setLastKmMarked(currentKm);
+      const lapData = { km: currentKm, time: timeStr, pace: paceStr };
+      setLaps(prev => [...prev, lapData]);
+      speakStats(currentKm, timeStr, paceStr);
+    }
+  }, [currentTotalDistance, lastKmMarked, timeStr, paceStr, voiceEnabled]);
+
 
   const handleOpenSpotify = (query?: string) => {
     if (query) {
@@ -208,22 +221,24 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
 
   return (
     <div className="h-full w-full bg-background-dark text-white flex flex-col overflow-hidden relative">
-      <div id="live-map" className="absolute inset-0 z-0"></div>
+      {!isTreadmillMode && <div id="live-map" className="absolute inset-0 z-0"></div>}
       <div className="absolute inset-0 bg-gradient-to-b from-background-dark/80 via-transparent to-background-dark/95 z-10 pointer-events-none"></div>
 
-      {/* GPS Signal Indicator */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/5">
-         <div className={`size-2 rounded-full ${gpsAccuracy && gpsAccuracy < 15 ? 'bg-green-500' : gpsAccuracy && gpsAccuracy < 30 ? 'bg-yellow-500' : 'bg-red-500'} animate-pulse`}></div>
-         <span className="text-[9px] font-black uppercase tracking-widest text-slate-300">GPS {gpsAccuracy ? Math.round(gpsAccuracy) + 'm' : 'Wait...'}</span>
-      </div>
+      {/* GPS Signal Indicator (only if not treadmill mode) */}
+      {!isTreadmillMode && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/5">
+          <div className={`size-2 rounded-full ${gpsAccuracy && gpsAccuracy < 15 ? 'bg-green-500' : gpsAccuracy && gpsAccuracy < 30 ? 'bg-yellow-500' : 'bg-red-500'} animate-pulse`}></div>
+          <span className="text-[9px] font-black uppercase tracking-widest text-slate-300">GPS {gpsAccuracy ? Math.round(gpsAccuracy) + 'm' : 'Wait...'}</span>
+        </div>
+      )}
 
       <header className="px-8 pt-16 pb-4 flex justify-between items-end z-20 relative">
         <div className="space-y-1">
           <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] italic block animate-pulse">
-            {isPaused ? 'PAUSADO' : 'GRAVANDO'}
+            {isPaused ? 'PAUSADO' : (isTreadmillMode ? 'ESTEIRA' : 'GRAVANDO')}
           </span>
           <h3 className="text-6xl font-black italic tracking-tighter font-lexend leading-none drop-shadow-lg">
-            {distance.toFixed(2)} <span className="text-slate-400 text-lg not-italic font-bold">KM</span>
+            {currentTotalDistance.toFixed(2)} <span className="text-slate-400 text-lg not-italic font-bold">KM</span>
           </h3>
         </div>
         
@@ -244,12 +259,25 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
         </div>
       </header>
 
-      {/* Center Feedback Area */}
+      {/* Center Feedback Area / Manual Distance Input */}
       <div className="flex-1 z-20 flex items-center justify-center pointer-events-none">
-         {lastKmMarked > 0 && (distance - lastKmMarked < 0.1) && (
-            <div className="bg-black/60 backdrop-blur-xl px-8 py-4 rounded-[2rem] border border-white/10 animate-in zoom-in fade-in duration-500">
-               <p className="text-white text-2xl font-black italic uppercase tracking-tighter">KM {lastKmMarked}</p>
+         {isTreadmillMode ? (
+            <div className="bg-black/60 backdrop-blur-xl px-8 py-4 rounded-[2rem] border border-white/10 animate-in zoom-in fade-in duration-500 pointer-events-auto">
+               <p className="text-white text-xl font-black italic uppercase tracking-tighter mb-2 text-center">Distância Manual</p>
+               <input
+                  type="number"
+                  step="0.1"
+                  value={manualDistance.toFixed(1)}
+                  onChange={(e) => setManualDistance(parseFloat(e.target.value))}
+                  className="w-32 bg-transparent text-center text-5xl font-black text-white italic outline-none border-b-2 border-primary/20 focus:border-primary pb-3 transition-all"
+               />
             </div>
+         ) : (
+            lastKmMarked > 0 && (currentTotalDistance - lastKmMarked < 0.1) && (
+                <div className="bg-black/60 backdrop-blur-xl px-8 py-4 rounded-[2rem] border border-white/10 animate-in zoom-in fade-in duration-500">
+                   <p className="text-white text-2xl font-black italic uppercase tracking-tighter">KM {lastKmMarked}</p>
+                </div>
+            )
          )}
       </div>
 
@@ -277,7 +305,7 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
            </button>
            
            <button 
-              onClick={() => onFinish({ distance, time: timeStr, pace: paceStr, routeCoords: route, laps: laps })}
+              onClick={() => onFinish({ distance: currentTotalDistance, time: timeStr, pace: paceStr, routeCoords: route, laps: laps })}
               className="h-24 flex-1 rounded-[2.5rem] bg-white text-black flex flex-col items-center justify-center gap-1 active:scale-95 shadow-2xl transition-all"
            >
               <span className="material-symbols-outlined text-4xl font-black text-accent-red">stop</span>
