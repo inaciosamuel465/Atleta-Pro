@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { APP_LOGO } from '../constants';
 
@@ -25,7 +24,7 @@ const StartActivity: React.FC<StartActivityProps> = ({ onBack, onStart }) => {
           <p className="text-[9px] font-black text-emerald-500 tracking-[0.4em] uppercase">Engines Warm: GPS 100%</p>
         </div>
         <div className="size-12 flex items-center justify-center">
-           <img src={APP_LOGO} className="w-full h-full object-contain drop-shadow-lg" alt="Logo" />
+           <img src={APP_LOGO} className="w-full h-full object-contain drop-shadow-[0_0_20px_rgba(37,140,244,0.6)]" alt="Logo" />
         </div>
       </header>
 

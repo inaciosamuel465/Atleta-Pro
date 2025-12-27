@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
@@ -91,7 +90,7 @@ const InitializeProfile: React.FC<InitializeProfileProps> = ({ onComplete, onSee
            <div className="absolute inset-0 bg-primary/20 blur-[50px] rounded-full group-hover:bg-primary/30 transition-all duration-700"></div>
            <img 
               src={APP_LOGO} 
-              className="w-48 h-48 object-contain relative z-10 drop-shadow-[0_15px_35px_rgba(0,0,0,0.5)] animate-float" 
+              className="w-48 h-48 object-contain relative z-10 drop-shadow-[0_0_30px_rgba(37,140,244,0.8)] animate-float" 
               alt="Atleta Pro Logo" 
            />
         </div>
