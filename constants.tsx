@@ -15,18 +15,18 @@ export const AVATAR_GALLERY = [
 ];
 
 export const WORKOUT_GALLERY = [
-  "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=800&q=80", // Trail running
-  "https://images.unsplash.com/photo-1502904550040-7534597429ae?w=800&q=80", // Road running
-  "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800&q=80", // Sunset run
-  "https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?w=800&q=80", // Forest path
-  "https://images.unsplash.com/photo-1530605663936-3c253e2c9973?w=800&q=80", // Mountain view
-  "https://images.unsplash.com/photo-1538370965046-79c0d6927485?w=800&q=80", // City run
-  "https://images.unsplash.com/photo-1571039630277-f1773912781b?w=800&q=80", // Treadmill
-  "https://images.unsplash.com/photo-1541534741688-60dc2bdafd17?w=800&q=80", // Gym workout
-  "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&q=80", // Weights
-  "https://images.unsplash.com/photo-1546483875-ad9014f0ba5c?w=800&q=80", // Cycling road
-  "https://images.unsplash.com/photo-1574680096145-d05b4747414c?w=800&q=80", // Indoor cycling
-  "https://images.unsplash.com/photo-1519500099198-fd86276ef005?w=800&q=80" // Night run
+  "https://images.unsplash.com/photo-1574680096145-d05b4747414c?w=720&h=1080&fit=crop&q=80", // Treadmill, vertical
+  "https://images.unsplash.com/photo-1505751172876-fa1923c58541?w=720&h=1080&fit=crop&q=80", // Road running, vertical
+  "https://images.unsplash.com/photo-1541534741688-60dc2bdafd17?w=720&h=1080&fit=crop&q=80", // Gym workout, vertical
+  "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=720&h=1080&fit=crop&q=80", // Weights, vertical
+  "https://images.unsplash.com/photo-1530605663936-3c253e2c9973?w=720&h=1080&fit=crop&q=80", // Mountain view, vertical
+  "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=720&h=1080&fit=crop&q=80", // Sunset run, vertical
+  "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=720&h=1080&fit=crop&q=80", // Trail running, vertical
+  "https://images.unsplash.com/photo-1538370965046-79c0d6927485?w=720&h=1080&fit=crop&q=80", // City run, vertical
+  "https://images.unsplash.com/photo-1546483875-ad9014f0ba5c?w=720&h=1080&fit=crop&q=80", // Cycling road, vertical
+  "https://images.unsplash.com/photo-1519500099198-fd86276ef005?w=720&h=1080&fit=crop&q=80", // Night run, vertical
+  "https://images.unsplash.com/photo-1592894407708-22271271211c?w=720&h=1080&fit=crop&q=80", // Woman running, vertical
+  "https://images.unsplash.com/photo-1594037997942-021211211c?w=720&h=1080&fit=crop&q=80"  // Man running, vertical
 ];
 
 export const DUMMY_ACTIVITIES: Activity[] = [
