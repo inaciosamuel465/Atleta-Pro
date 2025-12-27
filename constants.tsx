@@ -1,8 +1,7 @@
-
 import { Activity, UserProfile } from './types';
 
 // SUBSTITUA ESTA URL PELA URL DA SUA LOGO (ESCUDO AZUL)
-export const APP_LOGO = "https://cdn-icons-png.flaticon.com/512/1604/1604335.png"; 
+export const APP_LOGO = "/src/assets/logo.png"; 
 
 export const AVATAR_GALLERY = [
   "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=400&h=400&fit=crop",
@@ -36,7 +35,7 @@ export const DUMMY_ACTIVITIES: Activity[] = [
     time: '28:45',
     pace: "5' 45\"",
     calories: 320,
-    mapImage: "https://lh3.googleusercontent.com/aida-public/AB6AXuCRsdjqI5337F-1_1RzFDvJfX-LCu3jc9gtqXcC1oxi-2nWene8ffUrJeExV5MVzFt17owpCRtgA5IVHald8BHSj9kC7z77Y3jezCH60efr9JyQY3KzXVQzNnI8A7b5910o7fcnwbw8YltTc87nFKSPDxDHBVyQcn_kyT1I2KQLZk1V0TeSVLmjm_zEx9C23mLDhMzG59qdEQqRyDUK7zTgzLSAQSrru0lT8SpcSei9woiZfBNQQMyjeexnNz0U7hnRC0U7U30il8E"
+    mapImage: "https://lh3.googleusercontent.com/aida-public/AB6AXuCRsdjqI5337F-1_1RzFDvJfX-LCu3jc9gtqXcC1oxi-2nWene8ffUrJeExV5MVzFt17owpCRtgA5IVHald8BHSj9kC7z77Y3jezCH60efr9JyQY3KzXVQzNnI8A7b5910o7fcnwbw8YltTc87nFKSPDxDHBVyQcn_kyT1I2KQLZk1V0TeSVLmjm_zEx9C23mLDhMzG59qdEQqRyDUK7zTgzLSAQSQQSrru0lT8SpcSei9woiZfBNQQMyjeexnNz0U7hnRC0U7U30il8E"
   }
 ];
 
