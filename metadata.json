@@ -1,0 +1,8 @@
+{
+  "name": "Atleta Pro - Elite Performance Tracker",
+  "description": "A world-class athletic performance tracking application with real-time GPS tracking, detailed activity analytics, and personalized training insights.",
+  "requestFramePermissions": [
+    "geolocation",
+    "microphone"
+  ]
+}
