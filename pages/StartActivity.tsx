@@ -45,7 +45,7 @@ const StartActivity: React.FC<StartActivityProps> = ({ onBack, onStart }) => {
                 className={`shrink-0 w-36 h-48 rounded-[3rem] flex flex-col items-center justify-center gap-3 transition-all border-2 ${selectedType === type.label ? 'bg-primary border-primary shadow-2xl shadow-primary/40 text-white' : 'bg-surface-dark border-white/5 text-slate-500'}`}
               >
                 <div className={`size-16 rounded-2xl flex items-center justify-center ${selectedType === type.label ? 'bg-white/20' : 'bg-white/5 shadow-inner'}`}>
-                  <span className="material-symbols-outlined text-4xl font-black">{type.icon}</span>
+                  <span className={`material-symbols-outlined text-4xl font-black ${selectedType === type.label ? 'text-white' : 'text-slate-300'}`}>{type.icon}</span>
                 </div>
                 <div className="text-center">
                   <span className="font-black text-sm uppercase tracking-tight block italic">{type.label}</span>
