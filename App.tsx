@@ -1,9 +1,9 @@
-
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { GoogleGenAI } from '@google/genai';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, onSnapshot, collection, query, orderBy, setDoc, addDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { ref, uploadString, getDownloadURL } from 'firebase/storage'; // Import storage functions
+import { auth, db, storage } from './firebase'; // Import storage
 
 import { AppScreen, UserProfile, Activity, AIInsight } from './types';
 import { DUMMY_ACTIVITIES, INITIAL_USER } from './constants';
@@ -124,10 +124,24 @@ const App: React.FC = () => {
     setCurrentScreen(screen);
   }, []);
 
+  // Helper para upload de imagem para o Firebase Storage
+  const uploadImageAndGetUrl = async (uid: string, base64String: string): Promise<string> => {
+    const storageRef = ref(storage, `avatars/${uid}/${Date.now()}.png`);
+    await uploadString(storageRef, base64String, 'data_url');
+    return getDownloadURL(storageRef);
+  };
+
   const handleUpdateUser = async (updatedData: Partial<UserProfile>) => {
     if (user && auth.currentUser) {
       try {
         const userDocRef = doc(db, "users", auth.currentUser.uid);
+        
+        // Se o avatar for uma string base64, faça o upload para o Storage
+        if (updatedData.avatar && updatedData.avatar.startsWith('data:image/')) {
+          const imageUrl = await uploadImageAndGetUrl(auth.currentUser.uid, updatedData.avatar);
+          updatedData.avatar = imageUrl; // Atualiza o avatar para a URL do Storage
+        }
+
         await setDoc(userDocRef, { ...updatedData }, { merge: true });
       } catch (error) {
         console.error("Erro ao atualizar perfil no Firestore:", error);
