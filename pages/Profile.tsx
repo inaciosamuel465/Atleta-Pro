@@ -1,5 +1,4 @@
-
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { AppScreen, UserProfile, Activity } from '../types';
 import { AVATAR_GALLERY } from '../constants';
 
@@ -20,15 +19,29 @@ const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateU
   const [editData, setEditData] = useState({
     name: user.name,
     status: user.status,
-    avatar: user.avatar,
+    avatar: user.avatar, // This will hold the URL or base64 string for pending upload
     height: user.height,
     weight: user.weight,
     weeklyGoal: user.weeklyGoal || 20,
     monthlyGoal: user.monthlyGoal || 80
   });
 
+  // Separate state for the avatar URL input field in the edit modal
+  const [avatarUrlInput, setAvatarUrlInput] = useState(user.avatar);
+
+  // Sync avatarUrlInput with editData.avatar when editData.avatar is a URL
+  useEffect(() => {
+    if (editData.avatar && !editData.avatar.startsWith('data:image/')) {
+      setAvatarUrlInput(editData.avatar);
+    } else if (editData.avatar && editData.avatar.startsWith('data:image/')) {
+      setAvatarUrlInput(''); // Clear input if a base64 image is pending upload
+    }
+  }, [editData.avatar]);
+
   const handleSave = () => {
-    onUpdateUser(editData);
+    // If avatarUrlInput has a value, it takes precedence
+    const finalAvatar = avatarUrlInput || editData.avatar;
+    onUpdateUser({ ...editData, avatar: finalAvatar });
     setIsEditing(false);
   };
 
@@ -160,7 +173,11 @@ const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateU
             <div className="space-y-6 pb-4">
               <div className="space-y-2">
                 <p className="text-slate-500 text-[9px] font-black uppercase ml-2 italic">Link da Foto de Perfil</p>
-                <input className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white text-xs outline-none focus:border-primary" value={editData.avatar} onChange={e => setEditData({...editData, avatar: e.target.value})} />
+                <input 
+                  className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white text-xs outline-none focus:border-primary" 
+                  value={avatarUrlInput} 
+                  onChange={e => setAvatarUrlInput(e.target.value)} 
+                />
               </div>
               <div className="space-y-2">
                 <p className="text-slate-500 text-[9px] font-black uppercase ml-2 italic">Nome</p>
