@@ -3,7 +3,7 @@ import L from 'leaflet';
 import html2canvas from 'html2canvas';
 import { Activity } from '../types';
 import { WORKOUT_GALLERY } from '../constants';
-import { showSuccess, showError } from '../src/utils/toast'; // Importar funções de toast
+import { showSuccess, showError } from '../src/utils/toast';
 
 interface PostWorkoutProps {
   onSave: (data: Partial<Activity>) => Promise<void>;
@@ -16,6 +16,10 @@ interface PostWorkoutProps {
 const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, workout, isHistorical }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+  const polylineRef = useRef<L.Polyline | null>(null); // Referência para a polyline
+  const startMarkerRef = useRef<L.CircleMarker | null>(null); // Referência para o marcador de início
+  const endMarkerRef = useRef<L.CircleMarker | null>(null); // Referência para o marcador de fim
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   
@@ -27,49 +31,72 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, w
   const [showShareModal, setShowShareModal] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
 
-  // Map Initialization Logic
+  // Lógica de Inicialização e Atualização do Mapa
   useEffect(() => {
-    // Apenas inicializa mapa se não houver foto customizada E se houver coordenadas
-    if (!customPhoto && workout?.routeCoords && workout.routeCoords.length > 0 && mapContainerRef.current) {
+    if (!mapContainerRef.current) return;
+
+    // Se não há foto customizada e há coordenadas de rota
+    if (!customPhoto && workout?.routeCoords && workout.routeCoords.length > 0) {
+      if (!mapInstanceRef.current) {
+        // Inicializa o mapa apenas uma vez
+        mapInstanceRef.current = L.map(mapContainerRef.current, {
+          zoomControl: false,
+          attributionControl: false,
+          dragging: false,
+          scrollWheelZoom: false,
+          touchZoom: false,
+          zoomSnap: 0.1
+        });
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+          subdomains: 'abcd',
+          maxZoom: 19
+        }).addTo(mapInstanceRef.current);
+
+        polylineRef.current = L.polyline([], { 
+          color: '#258cf4', 
+          weight: 6,
+          opacity: 1,
+          lineCap: 'round',
+          lineJoin: 'round',
+          className: 'drop-shadow-[0_0_10px_rgba(37,140,244,0.6)]'
+        }).addTo(mapInstanceRef.current);
+
+        startMarkerRef.current = L.circleMarker([0,0], { radius: 6, fillColor: '#00e676', color: '#ffffff', weight: 2, fillOpacity: 1 }).addTo(mapInstanceRef.current);
+        endMarkerRef.current = L.circleMarker([0,0], { radius: 6, fillColor: '#ff1744', color: '#ffffff', weight: 2, fillOpacity: 1 }).addTo(mapInstanceRef.current);
+      }
+
+      // Atualiza a polyline e os marcadores
+      if (polylineRef.current && startMarkerRef.current && endMarkerRef.current) {
+        polylineRef.current.setLatLngs(workout.routeCoords);
+        const startPoint = workout.routeCoords[0];
+        const endPoint = workout.routeCoords[workout.routeCoords.length - 1];
+        startMarkerRef.current.setLatLng(startPoint);
+        endMarkerRef.current.setLatLng(endPoint);
+        mapInstanceRef.current.fitBounds(polylineRef.current.getBounds(), { padding: [80, 80] });
+      }
+    } else {
+      // Se houver foto customizada ou não houver rota, remove o mapa
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
+        polylineRef.current = null;
+        startMarkerRef.current = null;
+        endMarkerRef.current = null;
       }
-      
-      const map = L.map(mapContainerRef.current, {
-        zoomControl: false,
-        attributionControl: false,
-        dragging: false,
-        scrollWheelZoom: false,
-        touchZoom: false,
-        zoomSnap: 0.1
-      });
-      
-      mapInstanceRef.current = map;
-
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        subdomains: 'abcd',
-        maxZoom: 19
-      }).addTo(map);
-      
-      const polyline = L.polyline(workout.routeCoords, { 
-        color: '#258cf4', 
-        weight: 6,
-        opacity: 1,
-        lineCap: 'round',
-        lineJoin: 'round',
-        className: 'drop-shadow-[0_0_10px_rgba(37,140,244,0.6)]'
-      }).addTo(map);
-
-      const startPoint = workout.routeCoords[0];
-      const endPoint = workout.routeCoords[workout.routeCoords.length - 1];
-
-      L.circleMarker(startPoint, { radius: 6, fillColor: '#00e676', color: '#ffffff', weight: 2, fillOpacity: 1 }).addTo(map);
-      L.circleMarker(endPoint, { radius: 6, fillColor: '#ff1744', color: '#ffffff', weight: 2, fillOpacity: 1 }).addTo(map);
-
-      map.fitBounds(polyline.getBounds(), { padding: [80, 80] });
     }
-  }, [workout, customPhoto, template, aspectRatio]); 
+
+    // Cleanup function
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+        polylineRef.current = null;
+        startMarkerRef.current = null;
+        endMarkerRef.current = null;
+      }
+    };
+  }, [workout?.routeCoords, customPhoto]); // Dependências: rota e foto customizada
 
   const handleInitialSave = () => {
       setShowShareModal(true);
