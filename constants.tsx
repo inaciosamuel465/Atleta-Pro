@@ -1,7 +1,7 @@
 import { Activity, UserProfile } from './types';
 
 // SUBSTITUA ESTA URL PELA URL DA SUA LOGO (ESCUDO AZUL)
-export const APP_LOGO = "/src/assets/logo.png"; 
+export const APP_LOGO = "/logo.png"; 
 
 // AVATAR_GALLERY e WORKOUT_GALLERY agora são carregados dinamicamente do Firestore
 // e gerenciados pelo Admin Portal.
