@@ -320,7 +320,6 @@ const App: React.FC = () => {
         const finalActivity: any = {
           ...postWorkoutData,
           uid: auth.currentUser.uid,
-          // Prioriza a imagem gerada (snapshot) em vez do fallback estático
           mapImage: postWorkoutData.activityImage || "https://lh3.googleusercontent.com/aida-public/AB6AXuCRsdjqI5337F-1_1RzFDvJfX-LCu3jc9gtqXcC1oxi-2nWene8ffUrJeExV5MVzFt17owpCRtgA5IVHald8BHSj9kC7z77Y3jezCH60efr9JyQY3KzXVQzNnI8A7b5910o7fcnwbw8YltTc87nRC0U7U30il8E",
           type: activeWorkout?.type || 'Corrida',
           title: activeWorkout?.title || 'Treino',
@@ -339,15 +338,21 @@ const App: React.FC = () => {
         }
 
         const activitiesRef = collection(db, "users", auth.currentUser.uid, "activities");
-        await addDoc(activitiesRef, finalActivity);
+        
+        if (postWorkoutData.id) { // Se a atividade já tem um ID, é uma atualização
+          await setDoc(doc(activitiesRef, postWorkoutData.id), finalActivity, { merge: true });
+          showSuccess("Atividade atualizada com sucesso!");
+        } else { // Caso contrário, é uma nova atividade
+          await addDoc(activitiesRef, finalActivity);
+          showSuccess("Atividade salva com sucesso!");
+        }
         
         setActiveWorkout(null);
         setAiInsight(null);
         navigate(AppScreen.DASHBOARD);
-        showSuccess("Atividade salva com sucesso!"); // Toast de sucesso
       } catch (error) {
-        console.error("Erro ao salvar atividade:", error);
-        showError("Erro ao salvar no banco de dados. Verifique a conexão."); // Toast de erro
+        console.error("Erro ao salvar/atualizar atividade:", error);
+        showError("Erro ao salvar/atualizar no banco de dados. Verifique a conexão.");
       }
     }
   };

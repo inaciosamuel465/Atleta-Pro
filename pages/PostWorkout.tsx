@@ -151,7 +151,7 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, w
           
           const canvas = await html2canvas(cardRef.current, {
               useCORS: true,
-              scale: forDatabase ? 2 : 4, // Aumentado para melhor qualidade
+              scale: 4, // Sempre usar escala alta para melhor qualidade
               backgroundColor: '#0a0f14',
               logging: false,
               allowTaint: true
@@ -265,26 +265,26 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, w
   );
 
   const renderMinimal = () => (
-    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none p-8 z-20">
+    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none p-4 z-20"> {/* Ajustado padding */}
        <div className="absolute top-0 w-full h-40 bg-gradient-to-b from-black/80 to-transparent"></div>
        <div className="absolute bottom-0 w-full h-60 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
        <div className="relative z-10 text-center space-y-2">
           <div className="inline-block bg-primary/90 px-3 py-1 rounded-md mb-4 transform -rotate-2">
              <p className="text-[10px] font-black text-white uppercase tracking-[0.3em]">{workout.type?.toUpperCase()}</p>
           </div>
-          <h1 className="text-7xl leading-none font-black italic tracking-tighter text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] font-lexend">
+          <h1 className="text-6xl leading-none font-black italic tracking-tighter text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] font-lexend"> {/* Reduzido para text-6xl */}
              {workout.distance?.toFixed(1)}
           </h1>
-          <p className="text-2xl font-black italic uppercase tracking-[0.5em] text-white/90 font-lexend">Quilômetros</p>
+          <p className="text-xl font-black italic uppercase tracking-[0.5em] text-white/90 font-lexend">Quilômetros</p> {/* Reduzido para text-xl */}
        </div>
-       <div className="absolute bottom-16 w-full px-12 flex justify-between items-end border-t border-white/20 pt-6">
+       <div className="absolute bottom-10 w-full px-8 flex justify-between items-end border-t border-white/20 pt-6"> {/* Ajustado bottom e px */}
           <div className="text-left">
              <p className="text-[10px] text-primary font-black uppercase tracking-widest mb-1">Duração</p>
-             <p className="text-2xl font-black italic text-white font-lexend">{workout.time}</p>
+             <p className="text-xl font-black italic text-white font-lexend">{workout.time}</p> {/* Reduzido para text-xl */}
           </div>
           <div className="text-right">
              <p className="text-[10px] text-primary font-black uppercase tracking-widest mb-1">Ritmo Médio</p>
-             <p className="text-2xl font-black italic text-white font-lexend">{workout.pace}</p>
+             <p className="text-xl font-black italic text-white font-lexend">{workout.pace}</p> {/* Reduzido para text-xl */}
           </div>
        </div>
     </div>
