@@ -2,12 +2,12 @@ import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { GoogleGenAI } from '@google/genai';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, onSnapshot, collection, query, orderBy, setDoc, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadString, getDownloadURL } from 'firebase/storage'; // Import storage functions
-import { auth, db, storage } from './firebase'; // Import storage
-import { showSuccess, showError } from './src/utils/toast'; // Importar funções de toast
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { auth, db, storage } from './firebase';
+import { showSuccess, showError } from './src/utils/toast';
 
 import { AppScreen, UserProfile, Activity, AIInsight } from './types';
-import { DUMMY_ACTIVITIES, INITIAL_USER } from './constants';
+import { INITIAL_USER } from './constants'; // DUMMY_ACTIVITIES removido
 
 // Pages
 import InitializeProfile from './pages/InitializeProfile';
@@ -19,7 +19,7 @@ import History from './pages/History';
 import Profile from './pages/Profile';
 import Music from './pages/Music';
 import Stats from './pages/Stats';
-import AdminDashboard from './pages/AdminDashboard'; // Importar o novo componente AdminDashboard
+import AdminDashboard from './pages/AdminDashboard';
 
 // Components
 import BottomNav from './components/BottomNav';
@@ -35,7 +35,7 @@ const App: React.FC = () => {
   const [avatarGallery, setAvatarGallery] = useState<string[]>([]);
   const [workoutGallery, setWorkoutGallery] = useState<string[]>([]);
 
-  const hasShownAiErrorToast = useRef(false); // Ref para controlar o toast de erro da IA
+  const hasShownAiErrorToast = useRef(false);
 
   const isAdmin = user?.email === 'admin@atleta.com';
 
@@ -122,7 +122,7 @@ const App: React.FC = () => {
         setCurrentScreen(AppScreen.INITIALIZE);
         setAvatarGallery([]);
         setWorkoutGallery([]);
-        hasShownAiErrorToast.current = false; // Resetar ao deslogar
+        hasShownAiErrorToast.current = false;
       }
     });
 
@@ -170,7 +170,7 @@ const App: React.FC = () => {
       const timer = setTimeout(getInsight, 3000);
       return () => clearTimeout(timer);
     }
-  }, [activities, aiInsight, isGeneratingInsight, user, isAdmin]); // Adicionado isAdmin às dependências
+  }, [activities, aiInsight, isGeneratingInsight, user, isAdmin]);
 
   const navigate = useCallback((screen: AppScreen) => {
     setCurrentScreen(screen);
@@ -195,10 +195,10 @@ const App: React.FC = () => {
         }
 
         await setDoc(userDocRef, { ...updatedData }, { merge: true });
-        showSuccess("Perfil atualizado com sucesso!"); // Toast de sucesso
+        showSuccess("Perfil atualizado com sucesso!");
       } catch (error) {
         console.error("Erro ao atualizar perfil no Firestore:", error);
-        showError("Erro ao sincronizar perfil com a nuvem."); // Toast de erro
+        showError("Erro ao sincronizar perfil com a nuvem.");
       }
     }
   };
@@ -231,22 +231,21 @@ const App: React.FC = () => {
       try {
         await signOut(auth);
         setAiInsight(null);
-        showSuccess("Você saiu da sua conta."); // Toast de sucesso
+        showSuccess("Você saiu da sua conta.");
       } catch (error) {
         console.error("Erro ao sair:", error);
-        showError("Erro ao sair da conta."); // Toast de erro
+        showError("Erro ao sair da conta.");
       }
   };
 
   const seedDatabase = async (uid: string, profileData: UserProfile) => {
       try {
           await setDoc(doc(db, "users", uid), profileData);
-          // Removido: addDoc(actRef, dummyAct);
-          showSuccess("Dados iniciais carregados com sucesso!"); // Toast de sucesso
+          showSuccess("Dados iniciais carregados com sucesso!");
           return true;
       } catch (e) {
           console.error("Erro ao semear banco:", e);
-          showError("Erro ao carregar dados iniciais."); // Toast de erro
+          showError("Erro ao carregar dados iniciais.");
           throw e;
       }
   };
@@ -295,7 +294,7 @@ const App: React.FC = () => {
       time: Math.floor(totalSeconds / 3600) + "h " + Math.round(((totalSeconds / 3600) % 1) * 60) + "m",
       pace: avgPace,
       rawDistance: totalDist,
-      rawWeeklyDistance: rawWeeklyDistance // Adicionado
+      rawWeeklyDistance: rawWeeklyDistance
     };
   }, [activities]);
 
