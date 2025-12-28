@@ -4,6 +4,7 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, onSnapshot, collection, query, orderBy, setDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage'; // Import storage functions
 import { auth, db, storage } from './firebase'; // Import storage
+import { showSuccess, showError } from './src/utils/toast'; // Importar funções de toast
 
 import { AppScreen, UserProfile, Activity, AIInsight } from './types';
 import { DUMMY_ACTIVITIES, INITIAL_USER } from './constants';
@@ -110,6 +111,7 @@ const App: React.FC = () => {
           }
         } catch (e) {
           console.error("Erro ao gerar insight IA:", e);
+          showError("Erro ao gerar insight de IA."); // Toast de erro
         } finally {
           setIsGeneratingInsight(false);
         }
@@ -143,9 +145,10 @@ const App: React.FC = () => {
         }
 
         await setDoc(userDocRef, { ...updatedData }, { merge: true });
+        showSuccess("Perfil atualizado com sucesso!"); // Toast de sucesso
       } catch (error) {
         console.error("Erro ao atualizar perfil no Firestore:", error);
-        alert("Erro ao sincronizar perfil com a nuvem.");
+        showError("Erro ao sincronizar perfil com a nuvem."); // Toast de erro
       }
     }
   };
@@ -154,8 +157,10 @@ const App: React.FC = () => {
       try {
         await signOut(auth);
         setAiInsight(null);
+        showSuccess("Você saiu da sua conta."); // Toast de sucesso
       } catch (error) {
         console.error("Erro ao sair:", error);
+        showError("Erro ao sair da conta."); // Toast de erro
       }
   };
 
@@ -170,9 +175,11 @@ const App: React.FC = () => {
             createdAt: serverTimestamp()
           };
           await addDoc(actRef, dummyAct);
+          showSuccess("Dados iniciais carregados com sucesso!"); // Toast de sucesso
           return true;
       } catch (e) {
           console.error("Erro ao semear banco:", e);
+          showError("Erro ao carregar dados iniciais."); // Toast de erro
           throw e;
       }
   };
@@ -227,7 +234,7 @@ const App: React.FC = () => {
           ...postWorkoutData,
           uid: auth.currentUser.uid,
           // Prioriza a imagem gerada (snapshot) em vez do fallback estático
-          mapImage: postWorkoutData.activityImage || "https://lh3.googleusercontent.com/aida-public/AB6AXuCRsdjqI5337F-1_1RzFDvJfX-LCu3jc9gtqXcC1oxi-2nWene8ffUrJeExV5MVzFt17owpCRtgA5IVHald8BHSj9kC7z77Y3jezCH60efr9JyQY3KzXVQzNnI8A7b5910o7fcnwbw8YltTc87nFKSPDxDHBVyQcn_kyT1I2KQLZk1V0TeSVLmjm_zEx9C23mLDhMzG59qdEQqRyDUK7zTgzLSAQSrru0lT8SpcSei9woiZfBNQQMyjeexnNz0U7hnRC0U7U30il8E",
+          mapImage: postWorkoutData.activityImage || "https://lh3.googleusercontent.com/aida-public/AB6AXuCRsdjqI5337F-1_1RzFDvJfX-LCu3jc9gtqXcC1oxi-2nWene8ffUrJeExV5MVzFt17owpCRtgA5IVHald8BHSj9kC7z77Y3jezCH60efr9JyQY3KzXVQzNnI8A7b5910o7fcnwbw8YltTc87nRC0U7U30il8E",
           type: activeWorkout?.type || 'Corrida',
           title: activeWorkout?.title || 'Treino',
           date: new Date().toISOString(),
@@ -250,9 +257,10 @@ const App: React.FC = () => {
         setActiveWorkout(null);
         setAiInsight(null);
         navigate(AppScreen.DASHBOARD);
+        showSuccess("Atividade salva com sucesso!"); // Toast de sucesso
       } catch (error) {
         console.error("Erro ao salvar atividade:", error);
-        alert("Erro ao salvar no banco de dados. Verifique a conexão.");
+        showError("Erro ao salvar no banco de dados. Verifique a conexão."); // Toast de erro
       }
     }
   };

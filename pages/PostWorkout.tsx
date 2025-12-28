@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import L from 'leaflet';
 import html2canvas from 'html2canvas';
 import { Activity } from '../types';
 import { WORKOUT_GALLERY } from '../constants';
+import { showSuccess, showError } from '../src/utils/toast'; // Importar funções de toast
 
 interface PostWorkoutProps {
   onSave: (data: Partial<Activity>) => Promise<void>;
@@ -104,9 +104,10 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, w
         aspectRatio,
         template: template as any
       });
+      showSuccess("Atividade salva com sucesso!"); // Toast de sucesso
     } catch (e) {
       console.error("Save failed", e);
-      alert("Erro ao salvar. Tente novamente.");
+      showError("Erro ao salvar. Tente novamente."); // Toast de erro
     } finally {
       setIsSaving(false);
       setShowShareModal(false);
@@ -135,6 +136,7 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, w
           });
       } catch (err) {
           console.error("Erro ao gerar imagem", err);
+          showError("Erro ao gerar imagem para compartilhamento."); // Toast de erro
           return null;
       } finally {
           setIsCapturing(false);
@@ -169,12 +171,15 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, w
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
+          showSuccess("Imagem salva na galeria!"); // Toast de sucesso
+      } else {
+          showError("Não foi possível baixar a imagem."); // Toast de erro
       }
   };
 
   const handleInstagram = async () => {
       await handleDownload();
-      alert("Imagem salva na galeria! Abra o Instagram e compartilhe.");
+      // alert("Imagem salva na galeria! Abra o Instagram e compartilhe."); // Substituído pelo toast acima
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

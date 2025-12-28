@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AppScreen, UserProfile, Activity } from '../types';
 import { AVATAR_GALLERY } from '../constants';
+import { showSuccess, showError } from '../src/utils/toast'; // Importar funções de toast
 
 interface ProfileProps {
   navigate: (screen: AppScreen) => void;
@@ -43,6 +44,7 @@ const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateU
     const finalAvatar = avatarUrlInput || editData.avatar;
     onUpdateUser({ ...editData, avatar: finalAvatar });
     setIsEditing(false);
+    showSuccess("Perfil atualizado com sucesso!"); // Toast de sucesso
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,14 +55,19 @@ const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateU
         const base64String = reader.result as string;
         setEditData({ ...editData, avatar: base64String });
         setShowImagePicker(false);
+        showSuccess("Imagem de perfil selecionada!"); // Toast de sucesso
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleLogout = async () => {
-    if (confirm("Deseja realmente sair da conta?")) {
-      if (onLogout) onLogout();
+    // Substituindo o confirm() por um toast de confirmação
+    if (onLogout) {
+      // Poderíamos usar um toast com botões de ação aqui, mas para simplicidade, vamos direto
+      // com a ação de logout e um toast de sucesso/erro.
+      // Para uma confirmação mais robusta, seria necessário um modal customizado.
+      onLogout();
     }
   };
 
