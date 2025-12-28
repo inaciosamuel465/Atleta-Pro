@@ -438,7 +438,7 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, w
           <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/98 backdrop-blur-3xl p-6 animate-in fade-in duration-300">
             <div className="w-full max-w-sm bg-surface-dark rounded-[3.5rem] p-10 border border-white/10 space-y-8">
                 <div className="flex justify-between items-center">
-                    <h4 className="text-white text-xl font-black uppercase italic tracking-tighter font-lexend">Background</h4>
+                    <h4 className="text-white text-xl font-black italic uppercase tracking-tighter font-lexend">Background</h4>
                     <button onClick={() => setShowPhotoPicker(false)} className="size-10 rounded-xl bg-white/5 flex items-center justify-center"><span className="material-symbols-outlined">close</span></button>
                 </div>
                 
