@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { GoogleGenAI } from '@google/genai';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, onSnapshot, collection, query, orderBy, setDoc, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -34,6 +34,8 @@ const App: React.FC = () => {
   const [authLoading, setAuthLoading] = useState(true);
   const [avatarGallery, setAvatarGallery] = useState<string[]>([]);
   const [workoutGallery, setWorkoutGallery] = useState<string[]>([]);
+
+  const hasShownAiErrorToast = useRef(false); // Ref para controlar o toast de erro da IA
 
   const isAdmin = user?.email === 'admin@atleta.com';
 
@@ -84,10 +86,24 @@ const App: React.FC = () => {
                 "https://api.dicebear.com/8.x/bottts/svg?seed=Misty",
                 "https://api.dicebear.com/8.x/bottts/svg?seed=Shadow",
                 "https://api.dicebear.com/8.x/bottts/svg?seed=Pixel",
+                "https://images.unsplash.com/photo-1535713875002-d1d0cfce72b9?w=400&h=400&fit=crop",
+                "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop",
+                "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop",
+                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
               ],
               workoutGalleryUrls: [
                 "https://images.unsplash.com/photo-1574680096145-d05b4747414c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=720&h=1080&q=80",
                 "https://images.unsplash.com/photo-1505751172876-fa1923c58541?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=720&h=1080&q=80",
+                "https://images.unsplash.com/photo-1541534741688-60dc2bda874b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=720&h=1080&q=80",
+                "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=720&h=1080&q=80",
+                "https://images.unsplash.com/photo-1550345000-88b17579946b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=720&h=1080&q=80",
+                "https://images.unsplash.com/photo-1594882645123-cc0866b879b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=720&h=1080&q=80",
+                "https://images.unsplash.com/photo-1574680096145-d05b4747414c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=720&h=1080&q=80",
+                "https://images.unsplash.com/photo-1505751172876-fa1923c58541?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=720&h=1080&q=80",
+                "https://images.unsplash.com/photo-1541534741688-60dc2bda874b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=720&h=1080&q=80",
+                "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=720&h=1080&q=80",
+                "https://images.unsplash.com/photo-1550345000-88b17579946b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=720&h=1080&q=80",
+                "https://images.unsplash.com/photo-1594882645123-cc0866b879b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=720&h=1080&q=80",
               ],
             }, { merge: true }).catch(e => console.error("Erro ao criar appSettings padrão:", e));
           }
@@ -106,6 +122,7 @@ const App: React.FC = () => {
         setCurrentScreen(AppScreen.INITIALIZE);
         setAvatarGallery([]);
         setWorkoutGallery([]);
+        hasShownAiErrorToast.current = false; // Resetar ao deslogar
       }
     });
 
@@ -138,7 +155,11 @@ const App: React.FC = () => {
           }
         } catch (e) {
           console.error("Erro ao gerar insight IA:", e);
-          showError("Erro ao gerar insight de IA."); // Toast de erro
+          // Mostrar erro apenas para admin e uma vez por sessão
+          if (isAdmin && !hasShownAiErrorToast.current) {
+            showError("Erro ao gerar insight de IA. Verifique sua chave API."); 
+            hasShownAiErrorToast.current = true;
+          }
         } finally {
           setIsGeneratingInsight(false);
         }
@@ -147,7 +168,7 @@ const App: React.FC = () => {
       const timer = setTimeout(getInsight, 3000);
       return () => clearTimeout(timer);
     }
-  }, [activities, aiInsight, isGeneratingInsight, user]);
+  }, [activities, aiInsight, isGeneratingInsight, user, isAdmin]); // Adicionado isAdmin às dependências
 
   const navigate = useCallback((screen: AppScreen) => {
     setCurrentScreen(screen);
@@ -179,6 +200,30 @@ const App: React.FC = () => {
       }
     }
   };
+
+  // Nova função para admin editar qualquer usuário
+  const handleUpdateAnyUser = async (uid: string, updatedData: Partial<UserProfile>) => {
+    if (isAdmin) {
+      try {
+        const userDocRef = doc(db, "users", uid);
+        
+        // Se o avatar for uma string base64, faça o upload para o Storage
+        if (updatedData.avatar && updatedData.avatar.startsWith('data:image/')) {
+          const imageUrl = await uploadImageAndGetUrl(uid, updatedData.avatar);
+          updatedData.avatar = imageUrl; // Atualiza o avatar para a URL do Storage
+        }
+
+        await setDoc(userDocRef, { ...updatedData }, { merge: true });
+        showSuccess(`Perfil de ${updatedData.name || uid} atualizado com sucesso!`);
+      } catch (error) {
+        console.error("Erro ao atualizar perfil de outro usuário no Firestore:", error);
+        showError("Erro ao atualizar perfil do usuário.");
+      }
+    } else {
+      showError("Você não tem permissão para editar outros usuários.");
+    }
+  };
+
 
   const handleLogout = async () => {
       try {
@@ -224,7 +269,7 @@ const App: React.FC = () => {
     
     let avgPace = "0'00\"";
     if (totalDist > 0) {
-      const paceDecimal = (totalSeconds / 60) / totalDist;
+      const paceDecimal = (totalSeconds / 60) / totalDist; // Corrigido: usando totalSeconds
       const mins = Math.floor(paceDecimal);
       const secs = Math.round((paceDecimal - mins) * 60);
       avgPace = `${mins}'${secs < 10 ? '0' + secs : secs}"`;
@@ -349,7 +394,7 @@ const App: React.FC = () => {
       case AppScreen.MUSIC:
         return <Music onBack={() => navigate(AppScreen.DASHBOARD)} />;
       case AppScreen.ADMIN_DASHBOARD:
-        return isAdmin ? <AdminDashboard navigate={navigate} avatarGallery={avatarGallery} workoutGallery={workoutGallery} /> : <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} aiInsight={aiInsight} isGeneratingInsight={isGeneratingInsight} isAdmin={isAdmin} />;
+        return isAdmin ? <AdminDashboard navigate={navigate} avatarGallery={avatarGallery} workoutGallery={workoutGallery} onUpdateAnyUser={handleUpdateAnyUser} /> : <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} aiInsight={aiInsight} isGeneratingInsight={isGeneratingInsight} isAdmin={isAdmin} />;
       default:
         return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} aiInsight={aiInsight} isGeneratingInsight={isGeneratingInsight} isAdmin={isAdmin} />;
     }

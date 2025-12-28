@@ -1,18 +1,42 @@
-import React, { useState } from 'react';
-import { AppScreen } from '../types';
-import { doc, setDoc } from 'firebase/firestore';
+import React, { useState, useEffect } from 'react';
+import { AppScreen, UserProfile } from '../types';
+import { doc, setDoc, collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
 import { showSuccess, showError } from '../src/utils/toast';
+import AdminEditUser from '../components/AdminEditUser'; // Importar o novo componente
 
 interface AdminDashboardProps {
   navigate: (screen: AppScreen) => void;
   avatarGallery: string[];
   workoutGallery: string[];
+  onUpdateAnyUser: (uid: string, updatedData: Partial<UserProfile>) => void;
 }
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate, avatarGallery, workoutGallery }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate, avatarGallery, workoutGallery, onUpdateAnyUser }) => {
   const [newAvatarUrl, setNewAvatarUrl] = useState('');
   const [newWorkoutUrl, setNewWorkoutUrl] = useState('');
+  const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
+  const [selectedUserForEdit, setSelectedUserForEdit] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const usersCollectionRef = collection(db, "users");
+        const q = query(usersCollectionRef, orderBy('name', 'asc'));
+        const querySnapshot = await getDocs(q);
+        const usersData: UserProfile[] = querySnapshot.docs.map(doc => ({
+          uid: doc.id,
+          ...doc.data()
+        })) as UserProfile[];
+        setAllUsers(usersData);
+      } catch (error) {
+        console.error("Erro ao buscar usuários:", error);
+        showError("Erro ao carregar lista de usuários.");
+      }
+    };
+
+    fetchUsers();
+  }, [selectedUserForEdit]); // Recarrega usuários após salvar edição
 
   const handleAddAvatarUrl = async () => {
     if (newAvatarUrl.trim() === '') return;
@@ -73,6 +97,32 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate, avatarGallery
       </header>
 
       <main className="px-6 pt-8 space-y-10">
+        {/* Gerenciamento de Usuários */}
+        <section className="space-y-6 bg-surface-dark rounded-[2.5rem] p-8 border border-white/5">
+          <h3 className="text-white text-xl font-black tracking-tight italic uppercase">Gerenciar Usuários</h3>
+          <div className="space-y-4 max-h-80 overflow-y-auto no-scrollbar pr-1">
+            {allUsers.length > 0 ? allUsers.map((user) => (
+              <div key={user.uid} className="flex items-center justify-between bg-black/40 p-4 rounded-2xl border border-white/5">
+                <div className="flex items-center gap-3">
+                  <img src={user.avatar} className="size-10 rounded-full object-cover" alt="User Avatar" />
+                  <div>
+                    <p className="text-white font-bold text-sm">{user.name}</p>
+                    <p className="text-slate-500 text-xs">{user.email}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setSelectedUserForEdit(user)}
+                  className="px-4 py-2 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all"
+                >
+                  Editar
+                </button>
+              </div>
+            )) : (
+              <p className="text-slate-500 text-center text-sm">Nenhum usuário encontrado.</p>
+            )}
+          </div>
+        </section>
+
         {/* Gerenciamento de Galeria de Avatares */}
         <section className="space-y-6 bg-surface-dark rounded-[2.5rem] p-8 border border-white/5">
           <h3 className="text-white text-xl font-black tracking-tight italic uppercase">Avatares</h3>
@@ -139,6 +189,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate, avatarGallery
           </div>
         </section>
       </main>
+
+      {selectedUserForEdit && (
+        <AdminEditUser 
+          user={selectedUserForEdit}
+          avatarGallery={avatarGallery}
+          onSave={onUpdateAnyUser}
+          onCancel={() => setSelectedUserForEdit(null)}
+        />
+      )}
     </div>
   );
 };

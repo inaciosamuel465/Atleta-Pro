@@ -53,12 +53,20 @@ const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateU
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64String = reader.result as string;
-        setEditData({ ...editData, avatar: base64String });
-        setShowImagePicker(false);
+        onUpdateUser({ avatar: base64String }); // Salva imediatamente
+        setEditData({ ...editData, avatar: base64String }); // Atualiza o estado local
+        setShowImagePicker(false); // Fecha o picker
         showSuccess("Imagem de perfil selecionada!"); // Toast de sucesso
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleSelectGalleryAvatar = (url: string) => {
+    onUpdateUser({ avatar: url }); // Salva imediatamente
+    setEditData({ ...editData, avatar: url }); // Atualiza o estado local
+    setShowImagePicker(false); // Fecha o picker
+    showSuccess("Imagem de perfil selecionada!"); // Toast de sucesso
   };
 
   const handleLogout = async () => {
@@ -142,7 +150,7 @@ const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateU
               {avatarGallery.map((url, i) => (
                 <button 
                   key={i} 
-                  onClick={() => { setEditData({ ...editData, avatar: url }); setShowImagePicker(false); }}
+                  onClick={() => handleSelectGalleryAvatar(url)} // Chama a nova função
                   className="size-16 rounded-2xl overflow-hidden border-2 border-transparent hover:border-primary transition-all"
                 >
                   <img src={url} className="size-full object-cover" />
