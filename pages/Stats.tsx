@@ -82,6 +82,24 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities }) => {
     return sorted[0].pace;
   }, [activities]);
 
+  const totalActivities = useMemo(() => activities.length, [activities]);
+
+  const totalTimeSeconds = useMemo(() => {
+    return activities.reduce((acc, curr) => {
+      if (!curr.time) return acc;
+      const parts = curr.time.split(':').map(Number);
+      if (parts.length === 3) return acc + (parts[0] * 3600 + parts[1] * 60 + parts[2]);
+      if (parts.length === 2) return acc + (parts[0] * 60 + parts[1]);
+      return acc;
+    }, 0);
+  }, [activities]);
+
+  const totalTimeString = useMemo(() => {
+    const h = Math.floor(totalTimeSeconds / 3600);
+    const m = Math.floor((totalTimeSeconds % 3600) / 60);
+    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  }, [totalTimeSeconds]);
+
   const typeDistribution = useMemo(() => [
     { name: 'Corrida', value: activities.filter(a => a.type === 'Corrida').length, color: '#258cf4' },
     { name: 'Ciclismo', value: activities.filter(a => a.type === 'Ciclismo').length, color: '#a855f7' },
@@ -189,6 +207,26 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities }) => {
              </div>
              <p className="text-4xl font-black text-white italic tracking-tighter">{totalElevation} <span className="text-xs text-slate-600 not-italic">m</span></p>
           </div>
+          {/* New Quick Stat: Total Activities */}
+          <div className="bg-surface-dark rounded-[2.5rem] p-8 border border-white/5 space-y-4 shadow-lg group active:scale-95 transition-all">
+             <div className="flex items-center gap-3">
+                <div className="size-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                  <span className="material-symbols-outlined">directions_run</span>
+                </div>
+                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Total Ativs</p>
+             </div>
+             <p className="text-4xl font-black text-white italic tracking-tighter">{totalActivities}</p>
+          </div>
+          {/* New Quick Stat: Total Time */}
+          <div className="bg-surface-dark rounded-[2.5rem] p-8 border border-white/5 space-y-4 shadow-lg group active:scale-95 transition-all">
+             <div className="flex items-center gap-3">
+                <div className="size-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-all">
+                  <span className="material-symbols-outlined">timer</span>
+                </div>
+                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Tempo Total</p>
+             </div>
+             <p className="text-4xl font-black text-white italic tracking-tighter">{totalTimeString}</p>
+          </div>
         </section>
 
         {/* Activity Distribution */}
@@ -242,7 +280,7 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities }) => {
               ))}
               {unlockedAchievements.length === 0 && (
                 <div className="w-full py-10 flex flex-col items-center justify-center opacity-30 text-center">
-                  <span className="material-symbols-outlined text-4xl mb-2">lock</span>
+                  <span className="material-symbols-outlined text-6xl">lock</span>
                   <p className="text-[10px] font-black uppercase tracking-widest px-10">Realize seu primeiro treino para desbloquear medalhas</p>
                 </div>
               )}
