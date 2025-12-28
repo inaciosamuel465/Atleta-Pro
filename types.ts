@@ -1,4 +1,3 @@
-
 export enum AppScreen {
   INITIALIZE = 'INITIALIZE',
   DASHBOARD = 'DASHBOARD',
@@ -8,7 +7,8 @@ export enum AppScreen {
   HISTORY = 'HISTORY',
   PROFILE = 'PROFILE',
   MUSIC = 'MUSIC',
-  STATS = 'STATS'
+  STATS = 'STATS',
+  ADMIN_DASHBOARD = 'ADMIN_DASHBOARD' // Nova tela para o portal de administração
 }
 
 export interface Lap {

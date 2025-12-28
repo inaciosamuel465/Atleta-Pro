@@ -19,6 +19,7 @@ import History from './pages/History';
 import Profile from './pages/Profile';
 import Music from './pages/Music';
 import Stats from './pages/Stats';
+import AdminDashboard from './pages/AdminDashboard'; // Importar o novo componente AdminDashboard
 
 // Components
 import BottomNav from './components/BottomNav';
@@ -31,6 +32,10 @@ const App: React.FC = () => {
   const [aiInsight, setAiInsight] = useState<AIInsight | null>(null);
   const [isGeneratingInsight, setIsGeneratingInsight] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
+  const [avatarGallery, setAvatarGallery] = useState<string[]>([]);
+  const [workoutGallery, setWorkoutGallery] = useState<string[]>([]);
+
+  const isAdmin = user?.email === 'admin@atleta.com';
 
   // --- FIREBASE AUTH & DATA LISTENER ---
   useEffect(() => {
@@ -61,25 +66,46 @@ const App: React.FC = () => {
           snapshot.forEach((doc) => {
              loadedActivities.push({ id: doc.id, ...doc.data() } as Activity);
           });
-          // A ordenação client-side não é mais estritamente necessária se o índice do Firestore estiver configurado,
-          // mas pode servir como um fallback se o índice não estiver pronto.
-          // loadedActivities.sort((a, b) => {
-          //    const dateA = new Date(a.date).getTime() || 0;
-          //    const dateB = new Date(b.date).getTime() || 0;
-          //    return dateB - dateA;
-          // });
           setActivities(loadedActivities);
         });
+
+        // 3. Ouvir configurações globais (galerias, etc.)
+        const appSettingsRef = doc(db, "config", "appSettings");
+        const unsubAppSettings = onSnapshot(appSettingsRef, (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setAvatarGallery(data.avatarGalleryUrls || []);
+            setWorkoutGallery(data.workoutGalleryUrls || []);
+          } else {
+            // Se o documento de configurações não existe, cria um com valores padrão
+            setDoc(appSettingsRef, {
+              avatarGalleryUrls: [
+                "https://api.dicebear.com/8.x/bottts/svg?seed=Buddy",
+                "https://api.dicebear.com/8.x/bottts/svg?seed=Misty",
+                "https://api.dicebear.com/8.x/bottts/svg?seed=Shadow",
+                "https://api.dicebear.com/8.x/bottts/svg?seed=Pixel",
+              ],
+              workoutGalleryUrls: [
+                "https://images.unsplash.com/photo-1574680096145-d05b4747414c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=720&h=1080&q=80",
+                "https://images.unsplash.com/photo-1505751172876-fa1923c58541?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=720&h=1080&q=80",
+              ],
+            }, { merge: true }).catch(e => console.error("Erro ao criar appSettings padrão:", e));
+          }
+        });
+
 
         return () => {
           unsubUser();
           unsubActivities();
+          unsubAppSettings();
         };
       } else {
         setUser(null);
         setActivities([]);
         setAuthLoading(false);
         setCurrentScreen(AppScreen.INITIALIZE);
+        setAvatarGallery([]);
+        setWorkoutGallery([]);
       }
     });
 
@@ -198,7 +224,7 @@ const App: React.FC = () => {
     
     let avgPace = "0'00\"";
     if (totalDist > 0) {
-      const paceDecimal = (totalSeconds / 60) / totalDist;
+      const paceDecimal = (totalSeconds / 60) / totalDist; // Corrigido para usar 'totalSeconds'
       const mins = Math.floor(paceDecimal);
       const secs = Math.round((paceDecimal - mins) * 60);
       avgPace = `${mins}'${secs < 10 ? '0' + secs : secs}"`;
@@ -211,7 +237,7 @@ const App: React.FC = () => {
       pace: avgPace,
       rawDistance: totalDist
     };
-  }, [activities]);
+  }, [activities]); // Removido 'seconds' das dependências
 
   const handleStartWorkout = (config: any) => {
     setActiveWorkout({
@@ -287,23 +313,25 @@ const App: React.FC = () => {
 
     switch (currentScreen) {
       case AppScreen.DASHBOARD:
-        return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} aiInsight={aiInsight} isGeneratingInsight={isGeneratingInsight} />;
+        return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} aiInsight={aiInsight} isGeneratingInsight={isGeneratingInsight} isAdmin={isAdmin} />;
       case AppScreen.START_ACTIVITY:
         return <StartActivity onBack={() => navigate(AppScreen.DASHBOARD)} onStart={handleStartWorkout} />;
       case AppScreen.LIVE_ACTIVITY:
         return <LiveActivity onFinish={(data) => { setActiveWorkout(prev => ({ ...prev, ...data })); navigate(AppScreen.POST_WORKOUT); }} workoutConfig={activeWorkout!} user={user} />;
       case AppScreen.POST_WORKOUT:
-        return <PostWorkout onSave={handleSaveWorkout} onDiscard={() => { setActiveWorkout(null); navigate(AppScreen.DASHBOARD); }} workout={activeWorkout} />;
+        return <PostWorkout onSave={handleSaveWorkout} onDiscard={() => { setActiveWorkout(null); navigate(AppScreen.DASHBOARD); }} workout={activeWorkout} workoutGallery={workoutGallery} />;
       case AppScreen.HISTORY:
         return <History navigate={navigate} activities={activities} onViewActivity={(a) => { setActiveWorkout(a); navigate(AppScreen.POST_WORKOUT); }} />;
       case AppScreen.STATS:
         return <Stats navigate={navigate} activities={activities} />;
       case AppScreen.PROFILE:
-        return <Profile navigate={navigate} user={user} activities={activities} onUpdateUser={handleUpdateUser} onLogout={handleLogout} />;
+        return <Profile navigate={navigate} user={user} activities={activities} onUpdateUser={handleUpdateUser} onLogout={handleLogout} avatarGallery={avatarGallery} />;
       case AppScreen.MUSIC:
         return <Music onBack={() => navigate(AppScreen.DASHBOARD)} />;
+      case AppScreen.ADMIN_DASHBOARD:
+        return isAdmin ? <AdminDashboard navigate={navigate} avatarGallery={avatarGallery} workoutGallery={workoutGallery} /> : <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} aiInsight={aiInsight} isGeneratingInsight={isGeneratingInsight} isAdmin={isAdmin} />;
       default:
-        return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} aiInsight={aiInsight} isGeneratingInsight={isGeneratingInsight} />;
+        return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} aiInsight={aiInsight} isGeneratingInsight={isGeneratingInsight} isAdmin={isAdmin} />;
     }
   };
 

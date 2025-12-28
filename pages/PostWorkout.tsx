@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import L from 'leaflet';
 import html2canvas from 'html2canvas';
 import { Activity } from '../types';
-import { WORKOUT_GALLERY } from '../constants';
 import { showSuccess, showError } from '../src/utils/toast';
 
 interface PostWorkoutProps {
@@ -11,9 +10,10 @@ interface PostWorkoutProps {
   onClose?: () => void;
   workout: Partial<Activity> | null;
   isHistorical?: boolean;
+  workoutGallery: string[]; // Nova prop para a galeria de atividades
 }
 
-const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, workout, isHistorical }) => {
+const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, workout, isHistorical, workoutGallery }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const polylineRef = useRef<L.Polyline | null>(null); // Referência para a polyline
@@ -458,7 +458,7 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, w
                         <span className="material-symbols-outlined text-3xl">add_photo_alternate</span>
                         <span className="text-[8px] font-black uppercase">Galeria</span>
                     </button>
-                    {WORKOUT_GALLERY.map((url, i) => (
+                    {workoutGallery.map((url, i) => (
                         <button key={i} onClick={() => { setCustomPhoto(url); setShowPhotoPicker(false); }} className="h-28 rounded-3xl overflow-hidden hover:scale-95 transition-transform">
                             <img src={url} className="size-full object-cover" crossOrigin="anonymous" />
                         </button>

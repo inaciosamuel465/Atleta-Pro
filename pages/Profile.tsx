@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AppScreen, UserProfile, Activity } from '../types';
-import { AVATAR_GALLERY } from '../constants';
 import { showSuccess, showError } from '../src/utils/toast'; // Importar funções de toast
 
 interface ProfileProps {
@@ -10,9 +9,10 @@ interface ProfileProps {
   onUpdateUser: (updatedData: Partial<UserProfile>) => void;
   onSeedData?: () => void;
   onLogout?: () => void;
+  avatarGallery: string[]; // Nova prop para a galeria de avatares
 }
 
-const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateUser, onSeedData, onLogout }) => {
+const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateUser, onSeedData, onLogout, avatarGallery }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [showImagePicker, setShowImagePicker] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -139,7 +139,7 @@ const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateU
             </div>
 
             <div className="grid grid-cols-4 gap-3">
-              {AVATAR_GALLERY.map((url, i) => (
+              {avatarGallery.map((url, i) => (
                 <button 
                   key={i} 
                   onClick={() => { setEditData({ ...editData, avatar: url }); setShowImagePicker(false); }}

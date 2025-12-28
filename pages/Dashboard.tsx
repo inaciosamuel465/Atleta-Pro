@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { AppScreen, UserProfile, Activity, AIInsight } from '../types';
 
@@ -9,9 +8,10 @@ interface DashboardProps {
   lastActivity: Activity | undefined;
   aiInsight: AIInsight | null;
   isGeneratingInsight: boolean;
+  isAdmin: boolean; // Nova prop para verificar se é admin
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivity, aiInsight, isGeneratingInsight }) => {
+const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivity, aiInsight, isGeneratingInsight, isAdmin }) => {
   const MONTHLY_GOAL = user.monthlyGoal || 80;
   const progressPercent = Math.min(Math.round((stats.rawDistance / MONTHLY_GOAL) * 100), 100);
 
@@ -30,9 +30,19 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
             <h2 className="text-white text-3xl font-black tracking-tighter italic uppercase font-lexend leading-none">{user.name.split(' ')[0]}</h2>
           </div>
         </div>
-        <button className="size-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white active:scale-90 transition-all hover:bg-white/10">
-          <span className="material-symbols-outlined text-2xl font-bold">notifications</span>
-        </button>
+        <div className="flex gap-3">
+          {isAdmin && (
+            <button 
+              onClick={() => navigate(AppScreen.ADMIN_DASHBOARD)}
+              className="size-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-primary active:scale-90 transition-all hover:bg-white/10"
+            >
+              <span className="material-symbols-outlined text-2xl font-bold">admin_panel_settings</span>
+            </button>
+          )}
+          <button className="size-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white active:scale-90 transition-all hover:bg-white/10">
+            <span className="material-symbols-outlined text-2xl font-bold">notifications</span>
+          </button>
+        </div>
       </header>
 
       <main className="px-6 space-y-8 pt-6">
@@ -77,9 +87,9 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
                 <div>
                   <h4 className="text-white text-[11px] font-black uppercase tracking-[0.3em] font-display">IA Coach Insight</h4>
                   <div className="flex gap-1 mt-1">
-                    <div className="w-1 h-1 rounded-full bg-primary animate-ping"></div>
-                    <div className="w-1 h-1 rounded-full bg-primary animate-ping [animation-delay:0.2s]"></div>
-                    <div className="w-1 h-1 rounded-full bg-primary animate-ping [animation-delay:0.4s]"></div>
+                    <div className="w-1 h-1 rounded-full bg-primary animate-pulse"></div>
+                    <div className="w-1 h-1 rounded-full bg-primary animate-pulse [animation-delay:0.2s]"></div>
+                    <div className="w-1 h-1 rounded-full bg-primary animate-pulse [animation-delay:0.4s]"></div>
                   </div>
                 </div>
               </div>
