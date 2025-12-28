@@ -298,11 +298,20 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
                />
             </div>
          ) : (
-            lastKmMarked > 0 && (currentTotalDistance - lastKmMarked < 0.1) && (
-                <div className="bg-black/60 backdrop-blur-xl px-8 py-4 rounded-[2rem] border border-white/10 animate-in zoom-in fade-in duration-500">
-                   <p className="text-white text-2xl font-black italic uppercase tracking-tighter">KM {lastKmMarked}</p>
-                </div>
-            )
+            <div className="flex flex-col items-center gap-4">
+                {lastKmMarked > 0 && (currentTotalDistance - lastKmMarked < 0.1) && (
+                    <div className="bg-black/60 backdrop-blur-xl px-8 py-4 rounded-[2rem] border border-white/10 animate-in zoom-in fade-in duration-500">
+                       <p className="text-white text-2xl font-black italic uppercase tracking-tighter">KM {lastKmMarked}</p>
+                    </div>
+                )}
+                {/* Current Speed Display */}
+                {!isPaused && currentSpeed > 0.5 && ( // Only show if not paused and moving
+                    <div className="bg-black/60 backdrop-blur-xl px-8 py-4 rounded-[2rem] border border-white/10 animate-in zoom-in fade-in duration-500">
+                        <p className="text-white text-xl font-black italic uppercase tracking-tighter mb-2 text-center">Velocidade Atual</p>
+                        <p className="text-center text-5xl font-black text-white italic font-lexend">{currentSpeed.toFixed(1)} <span className="text-lg text-slate-400 not-italic font-bold">KM/H</span></p>
+                    </div>
+                )}
+            </div>
          )}
       </div>
 
