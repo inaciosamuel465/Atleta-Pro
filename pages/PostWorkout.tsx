@@ -151,7 +151,7 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, w
           
           const canvas = await html2canvas(cardRef.current, {
               useCORS: true,
-              scale: forDatabase ? 1.5 : 3, // Menor escala para DB para não estourar limite de 1MB
+              scale: forDatabase ? 2 : 4, // Aumentado para melhor qualidade
               backgroundColor: '#0a0f14',
               logging: false,
               allowTaint: true
@@ -159,7 +159,7 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, w
           
           return new Promise((resolve) => {
               // JPEG com qualidade reduzida se for para banco de dados
-              canvas.toBlob((blob) => resolve(blob), 'image/jpeg', forDatabase ? 0.6 : 0.95);
+              canvas.toBlob((blob) => resolve(blob), 'image/jpeg', forDatabase ? 0.7 : 0.95); // Qualidade ajustada
           });
       } catch (err) {
           console.error("Erro ao gerar imagem", err);
@@ -272,19 +272,19 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, w
           <div className="inline-block bg-primary/90 px-3 py-1 rounded-md mb-4 transform -rotate-2">
              <p className="text-[10px] font-black text-white uppercase tracking-[0.3em]">{workout.type?.toUpperCase()}</p>
           </div>
-          <h1 className="text-[100px] leading-none font-black italic tracking-tighter text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] font-lexend">
+          <h1 className="text-7xl leading-none font-black italic tracking-tighter text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] font-lexend">
              {workout.distance?.toFixed(1)}
           </h1>
-          <p className="text-3xl font-black italic uppercase tracking-[0.5em] text-white/90 font-lexend">Quilômetros</p>
+          <p className="text-2xl font-black italic uppercase tracking-[0.5em] text-white/90 font-lexend">Quilômetros</p>
        </div>
-       <div className="absolute bottom-12 w-full px-12 flex justify-between items-end border-t border-white/20 pt-6">
+       <div className="absolute bottom-16 w-full px-12 flex justify-between items-end border-t border-white/20 pt-6">
           <div className="text-left">
              <p className="text-[10px] text-primary font-black uppercase tracking-widest mb-1">Duração</p>
-             <p className="text-3xl font-black italic text-white font-lexend">{workout.time}</p>
+             <p className="text-2xl font-black italic text-white font-lexend">{workout.time}</p>
           </div>
           <div className="text-right">
              <p className="text-[10px] text-primary font-black uppercase tracking-widest mb-1">Ritmo Médio</p>
-             <p className="text-3xl font-black italic text-white font-lexend">{workout.pace}</p>
+             <p className="text-2xl font-black italic text-white font-lexend">{workout.pace}</p>
           </div>
        </div>
     </div>

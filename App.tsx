@@ -137,12 +137,14 @@ const App: React.FC = () => {
         try {
           const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
           const lastActivity = activities[0];
+          const today = new Date().toLocaleDateString('pt-BR');
           
           const response = await ai.models.generateContent({
             model: 'gemini-3-flash-preview',
-            contents: `Você é um coach de performance de elite. Analise este treino de ${user.name}: 
-            Distância: ${lastActivity.distance}km, Ritmo: ${lastActivity.pace}. 
-            Forneça um insight técnico motivador extremamente curto (max 12 palavras) para o dashboard do app.`,
+            contents: `Você é um coach de performance de elite com personalidade ${user.coachPersonality || 'Motivador'}. 
+            Analise o último treino de ${user.name} em ${lastActivity.date} com Distância: ${lastActivity.distance}km, Ritmo: ${lastActivity.pace}. 
+            Considerando que hoje é ${today}, forneça um insight técnico motivador extremamente curto (max 15 palavras) para o dashboard do app, 
+            que seja relevante para o dia atual ou para o próximo objetivo do atleta.`,
           });
           
           const text = response.text;
@@ -239,14 +241,7 @@ const App: React.FC = () => {
   const seedDatabase = async (uid: string, profileData: UserProfile) => {
       try {
           await setDoc(doc(db, "users", uid), profileData);
-          const actRef = collection(db, "users", uid, "activities");
-          const dummyAct = {
-            ...DUMMY_ACTIVITIES[0],
-            uid: uid,
-            date: new Date().toISOString(),
-            createdAt: serverTimestamp()
-          };
-          await addDoc(actRef, dummyAct);
+          // Removido: addDoc(actRef, dummyAct);
           showSuccess("Dados iniciais carregados com sucesso!"); // Toast de sucesso
           return true;
       } catch (e) {
@@ -269,7 +264,7 @@ const App: React.FC = () => {
     
     let avgPace = "0'00\"";
     if (totalDist > 0) {
-      const paceDecimal = (totalSeconds / 60) / totalDist; // Corrigido: usando totalSeconds
+      const paceDecimal = (totalSeconds / 60) / totalDist;
       const mins = Math.floor(paceDecimal);
       const secs = Math.round((paceDecimal - mins) * 60);
       avgPace = `${mins}'${secs < 10 ? '0' + secs : secs}"`;

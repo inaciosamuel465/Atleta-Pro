@@ -31,7 +31,7 @@ export interface Activity {
   mapImage: string;
   activityImage?: string;
   aspectRatio?: '9:16' | '16:9';
-  template?: 'Stealth' | 'Pro' | 'Explorer';
+  template?: 'Vortex' | 'Minimal' | 'Datastream'; // Corrigido para refletir os templates
   targetDistance?: number;
   targetTime?: number;
   routeCoords?: [number, number][];
@@ -62,4 +62,13 @@ export interface AIInsight {
   title: string;
   message: string;
   action: string;
+}
+
+export interface Challenge {
+  id: string;
+  title: string;
+  description: string;
+  progress: string;
+  icon: string;
+  color: string;
 }

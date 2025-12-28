@@ -1,5 +1,6 @@
-import React from 'react';
-import { AppScreen, UserProfile, Activity, AIInsight } from '../types';
+import React, { useState } from 'react';
+import { AppScreen, UserProfile, Activity, AIInsight, Challenge } from '../types';
+import ChallengeDetailModal from '../components/ChallengeDetailModal'; // Importar o novo componente
 
 interface DashboardProps {
   navigate: (screen: AppScreen) => void;
@@ -17,6 +18,18 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
   
   const monthlyProgressPercent = Math.min(Math.round((stats.rawDistance / MONTHLY_GOAL) * 100), 100);
   const weeklyProgressPercent = Math.min(Math.round((stats.rawWeeklyDistance / WEEKLY_GOAL) * 100), 100); // Novo progresso semanal
+
+  const [showChallengeModal, setShowChallengeModal] = useState(false);
+
+  // Desafio semanal fictício para demonstração
+  const weeklyChallenge: Challenge = {
+    id: 'weekly-run-5k',
+    title: 'Desafio da Semana',
+    description: 'Complete 3 treinos de corrida acima de 5km para ganhar a medalha "Maratonista Júnior" e 50 pontos de XP!',
+    progress: '33%', // Exemplo de progresso
+    icon: 'military_tech',
+    color: 'orange',
+  };
 
   return (
     <div className="pb-40 bg-background-dark min-h-screen relative no-scrollbar overflow-y-auto animate-in fade-in duration-700">
@@ -116,11 +129,11 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
                 </div>
             </div>
             <p className="text-white text-lg font-bold italic leading-snug font-lexend relative z-10">
-                Complete 3 treinos de corrida acima de 5km.
+                {weeklyChallenge.description}
             </p>
             <div className="flex justify-between items-center mt-6 relative z-10">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Progresso: 1/3</span>
-                <button className="text-primary text-[10px] font-black uppercase tracking-widest border-b border-primary/20 pb-0.5">Ver Detalhes</button>
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Progresso: {weeklyChallenge.progress}</span>
+                <button onClick={() => setShowChallengeModal(true)} className="text-primary text-[10px] font-black uppercase tracking-widest border-b border-primary/20 pb-0.5">Ver Detalhes</button>
             </div>
         </section>
 
@@ -225,6 +238,13 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
           </div>
         </button>
       </div>
+
+      {showChallengeModal && (
+        <ChallengeDetailModal 
+          challenge={weeklyChallenge} 
+          onClose={() => setShowChallengeModal(false)} 
+        />
+      )}
     </div>
   );
 };
