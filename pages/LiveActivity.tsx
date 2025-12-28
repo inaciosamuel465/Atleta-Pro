@@ -32,11 +32,12 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
   const [voiceEnabled, setVoiceEnabled] = useState(workoutConfig.voiceCues !== false);
   const [showMusicMenu, setShowMusicMenu] = useState(false);
 
+  const mapContainerRef = useRef<HTMLDivElement>(null); // Adicionado: Referência para o container do mapa
   const mapRef = useRef<L.Map | null>(null);
   const polylineRef = useRef<L.Polyline | null>(null);
   const markerRef = useRef<L.CircleMarker | null>(null);
   const lastPosRef = useRef<GeolocationPosition | null>(null);
-  const timerRef = useRef<number | null>(null);
+  const timerIntervalRef = useRef<number | null>(null);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   const isTreadmillMode = workoutConfig.terrain === 'Esteira';
@@ -45,18 +46,21 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
   const currentTotalDistance = isTreadmillMode ? manualDistance : gpsDistance;
 
   // Text-to-Speech Helper
-  const speakStats = (km: number, time: string, pace: string) => {
-    if (!voiceEnabled || !window.speechSynthesis) return;
+  const speakStats = useMemo(() => {
+    if (!window.speechSynthesis) return () => {};
+    return (km: number, time: string, pace: string) => {
+      if (!voiceEnabled) return;
 
-    const paceParts = pace.replace('"', '').split("'");
-    const paceSpeak = `${paceParts[0]} minutos e ${paceParts[1]} segundos`;
-    const text = `Quilômetro ${km} completado. Tempo total: ${time}. Ritmo médio: ${paceSpeak} por quilômetro.`;
-    
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'pt-BR';
-    utterance.rate = 1.1;
-    window.speechSynthesis.speak(utterance);
-  };
+      const paceParts = pace.replace('"', '').split("'");
+      const paceSpeak = `${paceParts[0]} minutos e ${paceParts[1]} segundos`;
+      const text = `Quilômetro ${km} completado. Tempo total: ${time}. Ritmo médio: ${paceSpeak} por quilômetro.`;
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'pt-BR';
+      utterance.rate = 1.1;
+      window.speechSynthesis.speak(utterance);
+    };
+  }, [voiceEnabled]);
 
   // Keep Screen Awake (Crucial for Web GPS Tracking)
   useEffect(() => {
@@ -75,44 +79,56 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
     };
   }, []);
 
-  // Map Init (only if not treadmill mode)
+  // Map Init and Cleanup (only if not treadmill mode)
   useEffect(() => {
-    if (!isTreadmillMode && !mapRef.current) {
-      mapRef.current = L.map('live-map', {
-        zoomControl: false,
-        attributionControl: false
-      }).setView([-23.5505, -46.6333], 16);
+    if (!isTreadmillMode && mapContainerRef.current) {
+      if (!mapRef.current) { // Initialize map only once
+        mapRef.current = L.map(mapContainerRef.current, {
+          zoomControl: false,
+          attributionControl: false
+        }).setView([-23.5505, -46.6333], 16);
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        subdomains: 'abcd',
-        maxZoom: 19
-      }).addTo(mapRef.current);
-      
-      polylineRef.current = L.polyline([], { 
-        color: '#258cf4', 
-        weight: 6,
-        opacity: 1,
-        lineCap: 'round',
-        lineJoin: 'round',
-        className: 'drop-shadow-[0_0_10px_rgba(37,140,244,0.6)]'
-      }).addTo(mapRef.current);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+          subdomains: 'abcd',
+          maxZoom: 19
+        }).addTo(mapRef.current);
+        
+        polylineRef.current = L.polyline([], { 
+          color: '#258cf4', 
+          weight: 6,
+          opacity: 1,
+          lineCap: 'round',
+          lineJoin: 'round',
+          className: 'drop-shadow-[0_0_10px_rgba(37,140,244,0.6)]'
+        }).addTo(mapRef.current);
 
-      markerRef.current = L.circleMarker([-23.5505, -46.6333], {
-        radius: 8,
-        fillColor: '#ffffff',
-        color: '#258cf4',
-        weight: 4,
-        fillOpacity: 1
-      }).addTo(mapRef.current);
+        markerRef.current = L.circleMarker([-23.5505, -46.6333], {
+          radius: 8,
+          fillColor: '#ffffff',
+          color: '#258cf4',
+          weight: 4,
+          fillOpacity: 1
+        }).addTo(mapRef.current);
+      }
+    } else {
+      // Cleanup map if switching to treadmill mode or unmounting
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+        polylineRef.current = null;
+        markerRef.current = null;
+      }
     }
-    // Cleanup map if switching to treadmill mode or unmounting
+    // Cleanup function for map
     return () => {
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
+        polylineRef.current = null;
+        markerRef.current = null;
       }
     };
-  }, [isTreadmillMode]);
+  }, [isTreadmillMode]); // Only re-run if treadmill mode changes
 
   const timeStr = useMemo(() => {
     const h = Math.floor(seconds / 3600);
@@ -132,23 +148,33 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
     return `${mins}'${secs < 10 ? '0' + secs : secs}"`;
   }, [currentTotalDistance, seconds]);
 
-  // Main Tracking Logic
+  // Main Timer Logic
   useEffect(() => {
     if (!isPaused) {
-      timerRef.current = window.setInterval(() => setSeconds(s => s + 1), 1000);
-      
-      let watchId: number | undefined;
+      timerIntervalRef.current = window.setInterval(() => setSeconds(s => s + 1), 1000);
+    } else {
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    }
+    return () => {
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    };
+  }, [isPaused]);
 
-      if (!isTreadmillMode) { // Only watch GPS if not in treadmill mode
-        watchId = navigator.geolocation.watchPosition(
-          (pos) => {
-            const { latitude, longitude, accuracy, speed } = pos.coords;
-            const newCoord: [number, number] = [latitude, longitude];
-            setGpsAccuracy(accuracy);
+  // GPS Tracking Logic
+  useEffect(() => {
+    let watchId: number | undefined;
 
-            // Filtro de Precisão: Ignora pontos com precisão pior que 25 metros
-            if (accuracy > 25) return;
+    if (!isPaused && !isTreadmillMode) {
+      watchId = navigator.geolocation.watchPosition(
+        (pos) => {
+          const { latitude, longitude, accuracy, speed } = pos.coords;
+          const newCoord: [number, number] = [latitude, longitude];
+          setGpsAccuracy(accuracy);
 
+          // Filtro de Precisão: Ignora pontos com precisão pior que 25 metros
+          if (accuracy > 25) return;
+
+          setGpsDistance(prevGpsDistance => {
             if (lastPosRef.current) {
               const d = getDistance(
                 lastPosRef.current.coords.latitude, 
@@ -165,36 +191,35 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
               const impliedSpeed = (d * 1000) / timeDelta; // m/s
 
               if (d > 0.004 && impliedSpeed < 10) { 
-                const newTotalDist = gpsDistance + d;
-                setGpsDistance(newTotalDist); // Update GPS distance
                 setRoute(prev => [...prev, newCoord]);
                 if (speed !== null) setCurrentSpeed(speed * 3.6); // m/s to km/h
+                return prevGpsDistance + d;
               }
             }
+            return prevGpsDistance; // Retorna a distância anterior se os filtros não passarem
+          });
 
-            // Map Updates (always update visuals even if distance is filtered for smoothness)
-            if (mapRef.current && polylineRef.current && markerRef.current) {
-              mapRef.current.panTo(newCoord, { animate: true, duration: 1 });
-              polylineRef.current.addLatLng(newCoord);
-              markerRef.current.setLatLng(newCoord);
-            }
-            lastPosRef.current = pos;
-          }, 
-          (err) => console.warn("GPS Error:", err), 
-          { 
-            enableHighAccuracy: true, 
-            timeout: 10000, 
-            maximumAge: 5000 
+          // Map Updates (always update visuals even if distance is filtered for smoothness)
+          if (mapRef.current && polylineRef.current && markerRef.current) {
+            mapRef.current.panTo(newCoord, { animate: true, duration: 1 });
+            polylineRef.current.addLatLng(newCoord);
+            markerRef.current.setLatLng(newCoord);
           }
-        );
-      }
-
-      return () => {
-        if (timerRef.current) clearInterval(timerRef.current);
-        if (watchId !== undefined) navigator.geolocation.clearWatch(watchId);
-      };
+          lastPosRef.current = pos;
+        }, 
+        (err) => console.warn("GPS Error:", err), 
+        { 
+          enableHighAccuracy: true, 
+          timeout: 10000, 
+          maximumAge: 5000 
+        }
+      );
     }
-  }, [isPaused, gpsDistance, isTreadmillMode]); // Dependências atualizadas
+
+    return () => {
+      if (watchId !== undefined) navigator.geolocation.clearWatch(watchId);
+    };
+  }, [isPaused, isTreadmillMode]); // Dependências: isPaused e isTreadmillMode
 
   // Lap Logic (uses currentTotalDistance)
   useEffect(() => {
@@ -205,7 +230,7 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
       setLaps(prev => [...prev, lapData]);
       speakStats(currentKm, timeStr, paceStr);
     }
-  }, [currentTotalDistance, lastKmMarked, timeStr, paceStr, voiceEnabled]);
+  }, [currentTotalDistance, lastKmMarked, timeStr, paceStr, speakStats]);
 
 
   const handleOpenSpotify = (query?: string) => {
@@ -221,7 +246,7 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
 
   return (
     <div className="h-full w-full bg-background-dark text-white flex flex-col overflow-hidden relative">
-      {!isTreadmillMode && <div id="live-map" className="absolute inset-0 z-0"></div>}
+      {!isTreadmillMode && <div id="live-map" ref={mapContainerRef} className="absolute inset-0 z-0"></div>}
       <div className="absolute inset-0 bg-gradient-to-b from-background-dark/80 via-transparent to-background-dark/95 z-10 pointer-events-none"></div>
 
       {/* GPS Signal Indicator (only if not treadmill mode) */}
