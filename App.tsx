@@ -51,22 +51,23 @@ const App: React.FC = () => {
           setAuthLoading(false);
         });
 
-        // 2. Ouvir Atividades em Tempo Real (Ordenadas por data)
+        // 2. Ouvir Atividades em Tempo Real (Ordenadas por data de criação)
         const activitiesRef = collection(db, "users", firebaseUser.uid, "activities");
-        // Tentativa de query ordenada. Se falhar por falta de indice, o sort client-side assume
-        const q = query(activitiesRef); 
+        // Adicionando ordenação por 'createdAt' em ordem decrescente
+        const q = query(activitiesRef, orderBy('createdAt', 'desc')); 
         
         const unsubActivities = onSnapshot(q, (snapshot) => {
           const loadedActivities: Activity[] = [];
           snapshot.forEach((doc) => {
              loadedActivities.push({ id: doc.id, ...doc.data() } as Activity);
           });
-          // Ordenação Client-side robusta
-          loadedActivities.sort((a, b) => {
-             const dateA = new Date(a.date).getTime() || 0;
-             const dateB = new Date(b.date).getTime() || 0;
-             return dateB - dateA;
-          });
+          // A ordenação client-side não é mais estritamente necessária se o índice do Firestore estiver configurado,
+          // mas pode servir como um fallback se o índice não estiver pronto.
+          // loadedActivities.sort((a, b) => {
+          //    const dateA = new Date(a.date).getTime() || 0;
+          //    const dateB = new Date(b.date).getTime() || 0;
+          //    return dateB - dateA;
+          // });
           setActivities(loadedActivities);
         });
 
