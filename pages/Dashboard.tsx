@@ -4,16 +4,19 @@ import { AppScreen, UserProfile, Activity, AIInsight } from '../types';
 interface DashboardProps {
   navigate: (screen: AppScreen) => void;
   user: UserProfile;
-  stats: { distance: string; calories: string | number; time: string; pace: string; rawDistance: number };
+  stats: { distance: string; calories: string | number; time: string; pace: string; rawDistance: number; rawWeeklyDistance: number }; // Adicionado rawWeeklyDistance
   lastActivity: Activity | undefined;
   aiInsight: AIInsight | null;
   isGeneratingInsight: boolean;
-  isAdmin: boolean; // Nova prop para verificar se é admin
+  isAdmin: boolean;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivity, aiInsight, isGeneratingInsight, isAdmin }) => {
   const MONTHLY_GOAL = user.monthlyGoal || 80;
-  const progressPercent = Math.min(Math.round((stats.rawDistance / MONTHLY_GOAL) * 100), 100);
+  const WEEKLY_GOAL = user.weeklyGoal || 20; // Nova meta semanal
+  
+  const monthlyProgressPercent = Math.min(Math.round((stats.rawDistance / MONTHLY_GOAL) * 100), 100);
+  const weeklyProgressPercent = Math.min(Math.round((stats.rawWeeklyDistance / WEEKLY_GOAL) * 100), 100); // Novo progresso semanal
 
   return (
     <div className="pb-40 bg-background-dark min-h-screen relative no-scrollbar overflow-y-auto animate-in fade-in duration-700">
@@ -46,7 +49,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
       </header>
 
       <main className="px-6 space-y-8 pt-6">
-        {/* Progress Card - "Ultra High" Aesthetic */}
+        {/* Progress Card - "Ultra High" Aesthetic (Monthly Goal) */}
         <section className="bg-gradient-to-br from-surface-dark via-surface-accent to-background-dark rounded-[3rem] p-10 border border-white/[0.05] shadow-2xl relative overflow-hidden group">
           <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/10 blur-[80px] rounded-full group-hover:bg-primary/20 transition-all duration-700"></div>
           <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-accent-green/5 blur-[80px] rounded-full"></div>
@@ -65,14 +68,60 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
           <div className="relative h-4 bg-white/[0.03] rounded-full overflow-hidden p-1 border border-white/[0.05] mb-6">
             <div 
               className="h-full bg-gradient-to-r from-primary via-blue-400 to-accent-green rounded-full transition-all duration-1000 shadow-[0_0_25px_rgba(37,140,244,0.4)]" 
-              style={{ width: `${progressPercent}%` }}
+              style={{ width: `${monthlyProgressPercent}%` }}
             />
           </div>
           
           <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500 relative z-10">
-            <span className="flex items-center gap-2"><span className="size-2 rounded-full bg-primary"></span> {progressPercent}% atingido</span>
+            <span className="flex items-center gap-2"><span className="size-2 rounded-full bg-primary"></span> {monthlyProgressPercent}% atingido</span>
             <span className="text-primary italic animate-bounce-slow">Keep Moving Elite &gt;</span>
           </div>
+        </section>
+
+        {/* Weekly Goal Card */}
+        <section className="bg-surface-dark/60 rounded-[3rem] p-8 border border-white/[0.05] shadow-lg relative overflow-hidden group">
+            <div className="absolute -top-8 -right-8 w-32 h-32 bg-accent-green/10 blur-[50px] rounded-full group-hover:bg-accent-green/20 transition-all duration-700"></div>
+            <div className="flex justify-between items-start mb-6 relative z-10">
+                <div>
+                    <h3 className="text-white text-xl font-black italic uppercase tracking-tight font-lexend">Meta Semanal</h3>
+                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] mt-1 italic">Foco na Consistência</p>
+                </div>
+                <div className="text-right">
+                    <span className="text-white text-4xl font-black italic font-lexend tracking-tighter text-accent-green">{stats.rawWeeklyDistance.toFixed(1)}</span>
+                    <span className="text-slate-600 text-xs font-black italic ml-2">/ {WEEKLY_GOAL} KM</span>
+                </div>
+            </div>
+            <div className="relative h-3 bg-white/[0.03] rounded-full overflow-hidden p-0.5 border border-white/[0.05] mb-4">
+                <div 
+                    className="h-full bg-gradient-to-r from-accent-green via-emerald-400 to-green-600 rounded-full transition-all duration-1000 shadow-[0_0_20px_rgba(0,230,118,0.4)]" 
+                    style={{ width: `${weeklyProgressPercent}%` }}
+                />
+            </div>
+            <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-slate-500 relative z-10">
+                <span>{weeklyProgressPercent}% atingido</span>
+                <span className="text-accent-green italic">Mais um passo &gt;</span>
+            </div>
+        </section>
+
+        {/* Weekly Challenge Card */}
+        <section className="bg-surface-dark/40 rounded-[3rem] p-8 border border-white/[0.05] shadow-lg relative overflow-hidden group">
+            <div className="absolute -top-8 -left-8 w-32 h-32 bg-orange-500/10 blur-[50px] rounded-full group-hover:bg-orange-500/20 transition-all duration-700"></div>
+            <div className="flex items-center gap-4 mb-6 relative z-10">
+                <div className="size-14 rounded-2xl bg-accent-orange/20 flex items-center justify-center text-accent-orange shadow-inner border border-accent-orange/10">
+                    <span className="material-symbols-outlined text-3xl">military_tech</span>
+                </div>
+                <div>
+                    <h3 className="text-white text-xl font-black italic uppercase tracking-tight font-lexend">Desafio da Semana</h3>
+                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] mt-1 italic">Conquiste a Glória</p>
+                </div>
+            </div>
+            <p className="text-white text-lg font-bold italic leading-snug font-lexend relative z-10">
+                Complete 3 treinos de corrida acima de 5km.
+            </p>
+            <div className="flex justify-between items-center mt-6 relative z-10">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Progresso: 1/3</span>
+                <button className="text-primary text-[10px] font-black uppercase tracking-widest border-b border-primary/20 pb-0.5">Ver Detalhes</button>
+            </div>
         </section>
 
         {/* AI Insight Widget - Coach Voice */}

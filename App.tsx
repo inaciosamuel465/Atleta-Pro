@@ -224,20 +224,40 @@ const App: React.FC = () => {
     
     let avgPace = "0'00\"";
     if (totalDist > 0) {
-      const paceDecimal = (totalSeconds / 60) / totalDist; // Corrigido para usar 'totalSeconds'
+      const paceDecimal = (totalSeconds / 60) / totalDist;
       const mins = Math.floor(paceDecimal);
       const secs = Math.round((paceDecimal - mins) * 60);
       avgPace = `${mins}'${secs < 10 ? '0' + secs : secs}"`;
     }
+
+    // Calculate weekly distance
+    const now = new Date();
+    now.setHours(0, 0, 0, 0); // Normalize to start of day
+
+    // Calculate start of the current week (Monday)
+    const dayOfWeek = now.getDay(); // 0 for Sunday, 1 for Monday
+    const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // If Sunday (0), diff is 6 days back. Otherwise, diff is dayOfWeek - 1.
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - diffToMonday);
+
+    const rawWeeklyDistance = activities.reduce((acc, curr) => {
+      const activityDate = new Date(curr.date);
+      activityDate.setHours(0, 0, 0, 0);
+      if (activityDate >= startOfWeek && activityDate <= now) {
+        return acc + (curr.distance || 0);
+      }
+      return acc;
+    }, 0);
 
     return {
       distance: totalDist.toFixed(1),
       calories: totalCals,
       time: Math.floor(totalSeconds / 3600) + "h " + Math.round(((totalSeconds / 3600) % 1) * 60) + "m",
       pace: avgPace,
-      rawDistance: totalDist
+      rawDistance: totalDist,
+      rawWeeklyDistance: rawWeeklyDistance // Adicionado
     };
-  }, [activities]); // Removido 'seconds' das dependências
+  }, [activities]);
 
   const handleStartWorkout = (config: any) => {
     setActiveWorkout({
