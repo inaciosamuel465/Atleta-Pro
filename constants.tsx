@@ -35,7 +35,7 @@ export const DUMMY_ACTIVITIES: Activity[] = [
     uid: 'dummy-user-123',
     type: 'Corrida',
     title: 'Corrida Matinal',
-    date: 'Hoje, 06:30',
+    date: new Date().toISOString(), // Alterado para ISOString
     location: 'Ibirapuera',
     distance: 5.0,
     time: '28:45',

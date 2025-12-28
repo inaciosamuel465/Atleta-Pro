@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
 import { AppScreen, Activity } from '../types';
@@ -22,10 +21,10 @@ interface AchievementDef {
 
 const ALL_ACHIEVEMENTS: AchievementDef[] = [
   { id: '1', title: 'King of 5k', desc: 'Correu pelo menos 5km em uma sessão', icon: 'military_tech', color: 'text-amber-400', bg: 'bg-amber-400/10', requirement: (acts) => acts.some(a => a.distance >= 5) },
-  { id: '2', title: 'Early Bird', desc: '2+ treinos realizados antes das 08:00', icon: 'wb_twilight', color: 'text-blue-400', bg: 'bg-blue-400/10', requirement: (acts) => acts.filter(a => a.date.includes('06:') || a.date.includes('07:')).length >= 2 },
+  { id: '2', title: 'Early Bird', desc: '2+ treinos realizados antes das 08:00', icon: 'wb_twilight', color: 'text-blue-400', bg: 'bg-blue-400/10', requirement: (acts) => acts.filter(a => new Date(a.date).getHours() < 8).length >= 2 },
   { id: '3', title: 'Marathoner Mind', desc: 'Acumulou mais de 20km no total', icon: 'auto_awesome', color: 'text-purple-400', bg: 'bg-purple-400/10', requirement: (acts) => acts.reduce((acc, a) => acc + a.distance, 0) >= 20 },
   { id: '4', title: 'Consistent', desc: 'Realizou pelo menos 5 atividades', icon: 'verified', color: 'text-emerald-400', bg: 'bg-emerald-400/10', requirement: (acts) => acts.length >= 5 },
-  { id: '5', title: 'Night Owl', desc: 'Treino realizado após as 20:00', icon: 'nights_stay', color: 'text-indigo-400', bg: 'bg-indigo-400/10', requirement: (acts) => acts.some(a => a.date.includes('20:') || a.date.includes('21:') || a.date.includes('22:')) },
+  { id: '5', title: 'Night Owl', desc: 'Treino realizado após as 20:00', icon: 'nights_stay', color: 'text-indigo-400', bg: 'bg-indigo-400/10', requirement: (acts) => acts.some(a => new Date(a.date).getHours() >= 20) },
   { id: '6', title: 'Speed Demon', desc: 'Ritmo abaixo de 5\'00"/km', icon: 'bolt', color: 'text-yellow-400', bg: 'bg-yellow-400/10', requirement: (acts) => acts.some(a => {
     const m = a.pace.match(/(\d+)'/);
     return m ? parseInt(m[1]) < 5 : false;
@@ -52,14 +51,10 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities }) => {
       const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
       return days.map((day, index) => {
         const dailyDist = activities.reduce((acc, act) => {
-          let actDate = new Date();
-          if (act.date.includes('Hoje')) actDate = new Date();
-          else if (act.date.includes('Ontem')) actDate.setDate(actDate.getDate() - 1);
-          else if (act.id.length > 10) actDate = new Date(parseInt(act.id));
-
-          if (actDate.getDay() === index) {
-            const diff = Math.floor((now.getTime() - actDate.getTime()) / (1000 * 3600 * 24));
-            if (diff < 7) return acc + act.distance;
+          const actDate = new Date(act.date); // Usar diretamente o ISOString
+          const diff = Math.floor((now.getTime() - actDate.getTime()) / (1000 * 3600 * 24));
+          if (actDate.getDay() === index && diff < 7) { // Últimos 7 dias
+            return acc + act.distance;
           }
           return acc;
         }, 0);
@@ -69,14 +64,11 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities }) => {
       const weeks = ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'];
       return weeks.map((week, idx) => {
         const weekDist = activities.reduce((acc, act) => {
-          let actDate = new Date();
-          if (act.date.includes('Hoje')) actDate = new Date();
-          else if (act.id.length > 10) actDate = new Date(parseInt(act.id));
-          
+          const actDate = new Date(act.date); // Usar diretamente o ISOString
           const diffDays = Math.floor((now.getTime() - actDate.getTime()) / (1000 * 3600 * 24));
           const actWeek = Math.floor(diffDays / 7);
           
-          if (actWeek === (3 - idx)) return acc + act.distance;
+          if (actWeek === (3 - idx) && diffDays < 28) return acc + act.distance; // Últimas 4 semanas
           return acc;
         }, 0);
         return { name: week, value: parseFloat(weekDist.toFixed(1)) };
