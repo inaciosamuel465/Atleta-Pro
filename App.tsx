@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, onSnapshot, collection, query, orderBy, setDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, onSnapshot, collection, query, orderBy, setDoc, addDoc, serverTimestamp, deleteDoc } from 'firebase/firestore'; // Importar deleteDoc
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { auth, db, storage } from './firebase';
 import { showSuccess, showError } from './src/utils/toast';
@@ -148,8 +148,8 @@ const App: React.FC = () => {
   }, []);
 
   // Helper para upload de imagem para o Firebase Storage
-  const uploadImageAndGetUrl = async (uid: string, base64String: string): Promise<string> => {
-    const storageRef = ref(storage, `avatars/${uid}/${Date.now()}.png`);
+  const uploadImageAndGetUrl = async (uid: string, base64String: string, path: string = 'images'): Promise<string> => {
+    const storageRef = ref(storage, `${path}/${uid}/${Date.now()}.png`);
     await uploadString(storageRef, base64String, 'data_url');
     return getDownloadURL(storageRef);
   };
@@ -161,7 +161,7 @@ const App: React.FC = () => {
         
         // Se o avatar for uma string base64, faça o upload para o Storage
         if (updatedData.avatar && updatedData.avatar.startsWith('data:image/')) {
-          const imageUrl = await uploadImageAndGetUrl(auth.currentUser.uid, updatedData.avatar);
+          const imageUrl = await uploadImageAndGetUrl(auth.currentUser.uid, updatedData.avatar, 'avatars');
           updatedData.avatar = imageUrl; // Atualiza o avatar para a URL do Storage
         }
 
@@ -182,7 +182,7 @@ const App: React.FC = () => {
         
         // Se o avatar for uma string base64, faça o upload para o Storage
         if (updatedData.avatar && updatedData.avatar.startsWith('data:image/')) {
-          const imageUrl = await uploadImageAndGetUrl(uid, updatedData.avatar);
+          const imageUrl = await uploadImageAndGetUrl(uid, updatedData.avatar, 'avatars');
           updatedData.avatar = imageUrl; // Atualiza o avatar para a URL do Storage
         }
 
@@ -327,10 +327,17 @@ const App: React.FC = () => {
   const handleSaveWorkout = async (postWorkoutData: Partial<Activity>) => {
     if (postWorkoutData && user && auth.currentUser) {
       try {
+        let finalActivityImage = postWorkoutData.activityImage;
+        // Se a activityImage for uma string base64, faça o upload para o Storage
+        if (finalActivityImage && finalActivityImage.startsWith('data:image/')) {
+          finalActivityImage = await uploadImageAndGetUrl(auth.currentUser.uid, finalActivityImage, 'activity_images');
+        }
+
         const finalActivity: any = {
           ...postWorkoutData,
           uid: auth.currentUser.uid,
-          mapImage: postWorkoutData.activityImage || "https://lh3.googleusercontent.com/aida-public/AB6AXuCRsdjqI5337F-1_1RzFDvJfX-LCu3jc9gtqXcC1oxi-2nWene8ffUrJeExV5MVzFt17owpCRtgA5IVHald8BHSj9kC7z77Y3jezCH60efr9JyQY3KzXVQzNnI8A7b5910o7fcnwbw8YltTc87nRC0U7U30il8E",
+          mapImage: postWorkoutData.mapImage || "https://lh3.googleusercontent.com/aida-public/AB6AXuCRsdjqI5337F-1_1RzFDvJfX-LCu3jc9gtqXcC1oxi-2nWene8ffUrJeExV5MVzFt17owpCRtgA5IVHald8BHSj9kC7z77Y3jezCH60efr9JyQY3KzXVQzNnI8A7b5910o7fcnwbw8YltTc87nRC0U7U30il8E",
+          activityImage: finalActivityImage, // Usar a URL do Storage ou a original
           type: activeWorkout?.type || 'Corrida',
           title: activeWorkout?.title || 'Treino',
           date: new Date().toISOString(),
@@ -343,6 +350,7 @@ const App: React.FC = () => {
           createdAt: serverTimestamp()
         };
         
+        // Remove activityImage duplicado se for a mesma coisa que mapImage para economizar espaço
         if (finalActivity.activityImage === finalActivity.mapImage) {
             delete finalActivity.activityImage;
         }
@@ -362,6 +370,21 @@ const App: React.FC = () => {
       } catch (error) {
         console.error("Erro ao salvar/atualizar atividade:", error);
         showError("Erro ao salvar/atualizar no banco de dados. Verifique a conexão.");
+      }
+    }
+  };
+
+  const handleDeleteActivity = async (activityId: string) => {
+    if (user && auth.currentUser) {
+      try {
+        const activityDocRef = doc(db, "users", auth.currentUser.uid, "activities", activityId);
+        await deleteDoc(activityDocRef);
+        showSuccess("Atividade deletada com sucesso!");
+        setActiveWorkout(null); // Limpa a atividade ativa se for a que foi deletada
+        navigate(AppScreen.HISTORY); // Volta para o histórico
+      } catch (error) {
+        console.error("Erro ao deletar atividade:", error);
+        showError("Erro ao deletar atividade. Tente novamente.");
       }
     }
   };
@@ -393,7 +416,14 @@ const App: React.FC = () => {
       case AppScreen.LIVE_ACTIVITY:
         return <LiveActivity onFinish={(data) => { setActiveWorkout(prev => ({ ...prev, ...data })); navigate(AppScreen.POST_WORKOUT); }} workoutConfig={activeWorkout!} user={user} />;
       case AppScreen.POST_WORKOUT:
-        return <PostWorkout onSave={handleSaveWorkout} onDiscard={() => { setActiveWorkout(null); navigate(AppScreen.DASHBOARD); }} workout={activeWorkout} workoutGallery={workoutGallery} />;
+        return <PostWorkout 
+          onSave={handleSaveWorkout} 
+          onDiscard={() => { setActiveWorkout(null); navigate(AppScreen.DASHBOARD); }} 
+          onDelete={handleDeleteActivity} // Passar a função de deletar
+          workout={activeWorkout} 
+          workoutGallery={workoutGallery} 
+          isHistorical={activeWorkout?.id !== undefined} // Determinar se é histórico
+        />;
       case AppScreen.HISTORY:
         return <History navigate={navigate} activities={activities} onViewActivity={(a) => { setActiveWorkout(a); navigate(AppScreen.POST_WORKOUT); }} />;
       case AppScreen.STATS:

@@ -7,13 +7,14 @@ import { showSuccess, showError } from '../src/utils/toast';
 interface PostWorkoutProps {
   onSave: (data: Partial<Activity>) => Promise<void>;
   onDiscard: () => void;
-  onClose?: () => void;
+  onClose?: () => void; // Tornar opcional
+  onDelete: (activityId: string) => Promise<void>; // Nova prop para deletar
   workout: Partial<Activity> | null;
   isHistorical?: boolean;
   workoutGallery: string[]; // Nova prop para a galeria de atividades
 }
 
-const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, workout, isHistorical, workoutGallery }) => {
+const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, onDelete, workout, isHistorical, workoutGallery }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const polylineRef = useRef<L.Polyline | null>(null); // Referência para a polyline
@@ -25,8 +26,8 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, w
   
   const [customPhoto, setCustomPhoto] = useState<string | null>(workout?.activityImage || null);
   const [showPhotoPicker, setShowPhotoPicker] = useState(false);
-  const [aspectRatio, setAspectRatio] = useState<'9:16' | '16:9'>('9:16');
-  const [template, setTemplate] = useState<'Vortex' | 'Minimal' | 'Datastream'>('Vortex');
+  const [aspectRatio, setAspectRatio] = useState<'9:16' | '16:9'>(workout?.aspectRatio || '9:16'); // Usar o aspect ratio salvo
+  const [template, setTemplate] = useState<'Vortex' | 'Minimal' | 'Datastream'>(workout?.template || 'Vortex'); // Usar o template salvo
   const [isSaving, setIsSaving] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
@@ -35,7 +36,7 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, w
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    // Se não há foto customizada e há coordenadas de rota
+    // Se não há foto customizada E há coordenadas de rota
     if (!customPhoto && workout?.routeCoords && workout.routeCoords.length > 0) {
       if (!mapInstanceRef.current) {
         // Inicializa o mapa apenas uma vez
@@ -76,7 +77,7 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, w
         mapInstanceRef.current.fitBounds(polylineRef.current.getBounds(), { padding: [80, 80] });
       }
     } else {
-      // Se houver foto customizada ou não houver rota, remove o mapa
+      // Se houver foto customizada OU não houver rota, remove o mapa
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -97,6 +98,14 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, w
       }
     };
   }, [workout?.routeCoords, customPhoto]); // Dependências: rota e foto customizada
+
+  // Sincronizar customPhoto com workout.activityImage quando o workout muda
+  useEffect(() => {
+    setCustomPhoto(workout?.activityImage || null);
+    setAspectRatio(workout?.aspectRatio || '9:16');
+    setTemplate(workout?.template || 'Vortex');
+  }, [workout]);
+
 
   const handleInitialSave = () => {
       setShowShareModal(true);
@@ -265,6 +274,12 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, w
     }
   };
 
+  const handleDeleteClick = () => {
+    if (workout?.id && window.confirm("Tem certeza que deseja deletar esta atividade? Esta ação não pode ser desfeita.")) {
+      onDelete(workout.id);
+    }
+  };
+
   if (!workout) return null;
 
   // --- TEMPLATE RENDERERS ---
@@ -276,7 +291,7 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, w
              <span className="text-[10px] font-black uppercase tracking-widest text-white">Atleta Pro</span>
           </div>
           <div className="text-right">
-             <p className="text-[10px] font-black uppercase tracking-widest text-white/80">{workout.date}</p>
+             <p className="text-[10px] font-black uppercase tracking-widest text-white/80">{new Date(workout.date!).toLocaleDateString('pt-BR')}</p>
           </div>
        </div>
        <div className="p-6 w-full">
@@ -373,7 +388,7 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, w
     <div className="bg-background-dark min-h-screen text-white flex flex-col relative animate-in fade-in duration-500 pb-20 overflow-y-auto no-scrollbar">
       <header className="sticky top-0 left-0 w-full z-50 bg-background-dark/80 backdrop-blur-2xl border-b border-white/[0.03]">
         <div className="flex items-center justify-between px-6 py-5 max-w-md mx-auto">
-          <button onClick={isHistorical ? onClose : onDiscard} className="size-11 flex items-center justify-center rounded-2xl bg-white/5 border border-white/10 active:scale-90 transition-all hover:bg-white/10">
+          <button onClick={isHistorical && onClose ? onClose : onDiscard} className="size-11 flex items-center justify-center rounded-2xl bg-white/5 border border-white/10 active:scale-90 transition-all hover:bg-white/10">
             <span className="material-symbols-outlined text-white text-2xl">{isHistorical ? 'arrow_back' : 'close'}</span>
           </button>
           <div className="text-center">
@@ -484,6 +499,17 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, w
           >
             <span className="material-symbols-outlined text-xl mr-2">download</span>
             Exportar Rota (GPX)
+          </button>
+        )}
+
+        {/* Botão de Deletar Atividade (apenas para atividades históricas) */}
+        {isHistorical && workout.id && (
+          <button 
+            onClick={handleDeleteClick}
+            className="w-full h-16 bg-red-500/10 text-red-500 rounded-[2rem] font-black uppercase italic shadow-lg active:scale-95 transition-all mt-4 border border-red-500/20 hover:bg-red-500/20"
+          >
+            <span className="material-symbols-outlined text-xl mr-2">delete</span>
+            Deletar Atividade
           </button>
         )}
       </main>
