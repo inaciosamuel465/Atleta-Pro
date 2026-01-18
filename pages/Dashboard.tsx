@@ -8,9 +8,11 @@ interface DashboardProps {
   stats: { distance: string; calories: string | number; time: string; pace: string; rawDistance: number; rawWeeklyDistance: number };
   lastActivity: Activity | undefined;
   isAdmin: boolean;
+  aiInsight: string | null; // Nova prop para o insight da IA
+  aiLoading: boolean; // Nova prop para o estado de carregamento da IA
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivity, isAdmin }) => {
+const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivity, isAdmin, aiInsight, aiLoading }) => {
   const MONTHLY_GOAL = user.monthlyGoal || 80;
   const WEEKLY_GOAL = user.weeklyGoal || 20;
   
@@ -28,19 +30,6 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
     icon: 'military_tech',
     color: 'orange',
   };
-
-  // Dica de Performance Calculada
-  const performanceTip = (() => {
-    if (stats.rawWeeklyDistance >= WEEKLY_GOAL) {
-      return `Parabéns, ${user.name.split(' ')[0]}! Você superou sua meta semanal. Mantenha o ritmo!`;
-    } else if (stats.rawWeeklyDistance > WEEKLY_GOAL * 0.75) {
-      return `Quase lá, ${user.name.split(' ')[0]}! Faltam poucos KM para sua meta semanal.`;
-    } else if (stats.rawWeeklyDistance > 0) {
-      return `Continue firme, ${user.name.split(' ')[0]}! Cada KM conta para sua meta semanal.`;
-    } else {
-      return `Comece sua semana, ${user.name.split(' ')[0]}! Sua meta de ${WEEKLY_GOAL}km espera por você.`;
-    }
-  })();
 
   return (
     <div className="pb-40 bg-background-dark min-h-screen relative no-scrollbar overflow-y-auto animate-in fade-in duration-700">
@@ -148,7 +137,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
             </div>
         </section>
 
-        {/* Performance Tip Widget (formerly AI Insight) */}
+        {/* Performance Tip Widget (AI Insight) */}
         <section className="relative group">
           <div className="absolute -inset-1.5 bg-gradient-to-r from-primary/50 to-accent-green/50 rounded-[3rem] blur opacity-15 group-hover:opacity-25 transition-all"></div>
           <div className="relative glass-card rounded-[3rem] p-10 overflow-hidden border border-white/10">
@@ -168,7 +157,14 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
               </div>
             </div>
             <p className="text-white text-xl font-bold italic leading-snug font-lexend">
-              {performanceTip}
+              {aiLoading ? (
+                <span className="flex items-center gap-2">
+                  <span className="material-symbols-outlined animate-spin text-2xl">sync</span>
+                  Gerando insight...
+                </span>
+              ) : (
+                aiInsight || "Comece a treinar para receber insights personalizados!"
+              )}
             </p>
           </div>
         </section>

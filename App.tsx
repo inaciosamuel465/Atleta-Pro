@@ -4,6 +4,7 @@ import { doc, onSnapshot, collection, query, orderBy, setDoc, addDoc, serverTime
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { auth, db, storage } from './firebase';
 import { showSuccess, showError } from './src/utils/toast';
+import GoogleGenerativeAI from '@google/genai'; // Importar GoogleGenerativeAI como exportação padrão
 
 import { AppScreen, UserProfile, Activity } from './types'; // AIInsight removido
 import { INITIAL_USER } from './constants';
@@ -23,6 +24,11 @@ import AdminDashboard from './pages/AdminDashboard';
 // Components
 import BottomNav from './components/BottomNav';
 
+// Inicializar a API Gemini
+const API_KEY = process.env.GEMINI_API_KEY; // Usar process.env diretamente
+const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY as string) : null;
+const model = genAI ? genAI.getGenerativeModel({ model: "gemini-pro" }) : null;
+
 const App: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<AppScreen>(AppScreen.INITIALIZE);
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -31,6 +37,8 @@ const App: React.FC = () => {
   const [authLoading, setAuthLoading] = useState(true);
   const [avatarGallery, setAvatarGallery] = useState<string[]>([]);
   const [workoutGallery, setWorkoutGallery] = useState<string[]>([]);
+  const [aiInsight, setAiInsight] = useState<string | null>(null); // Estado para o insight da IA
+  const [aiLoading, setAiLoading] = useState(false); // Estado de carregamento da IA
 
   const isAdmin = user?.email === 'admin@atleta.com';
 
@@ -248,6 +256,47 @@ const App: React.FC = () => {
     };
   }, [activities]);
 
+  // Função para gerar insights da IA
+  const generateAIInsight = useCallback(async () => {
+    if (!model || !user || !activities.length) {
+      setAiInsight("Comece a treinar para receber insights personalizados!");
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const lastActivity = activities[0]; // A atividade mais recente
+      const prompt = `Você é um treinador atlético de elite chamado Atleta Pro. Forneça um insight de desempenho conciso, encorajador e personalizado para o usuário com base em seu perfil e dados de atividade recentes.
+      Nome do Usuário: ${user.name}
+      Status do Usuário: ${user.status}
+      Objetivo do Usuário: ${user.goal}
+      Personalidade do Treinador: ${user.coachPersonality || 'Motivador'}
+      Distância Total: ${stats.rawDistance} km
+      Distância Semanal: ${stats.rawWeeklyDistance} km
+      Última Atividade: ${lastActivity?.title || 'Nenhuma'} (${lastActivity?.distance || 0} km em ${lastActivity?.date ? new Date(lastActivity.date).toLocaleDateString('pt-BR') : 'N/A'})
+      Foque em motivação, consistência ou alcance de metas. Mantenha o insight com menos de 100 palavras. Comece diretamente com o insight, sem saudações.`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      setAiInsight(text);
+    } catch (error) {
+      console.error("Erro ao gerar insight da IA:", error);
+      setAiInsight("Não foi possível gerar um insight no momento. Tente novamente mais tarde.");
+    } finally {
+      setAiLoading(false);
+    }
+  }, [user, activities, stats]);
+
+  // Chamar a função de IA quando o usuário ou as atividades mudarem
+  useEffect(() => {
+    if (user && activities.length > 0) {
+      generateAIInsight();
+    } else if (user && activities.length === 0) {
+      setAiInsight("Comece a treinar para receber insights personalizados!");
+    }
+  }, [user, activities, generateAIInsight]);
+
+
   const handleStartWorkout = (config: any) => {
     setActiveWorkout({
       uid: user?.uid,
@@ -327,7 +376,7 @@ const App: React.FC = () => {
 
     switch (currentScreen) {
       case AppScreen.DASHBOARD:
-        return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} />;
+        return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} aiInsight={aiInsight} aiLoading={aiLoading} />;
       case AppScreen.START_ACTIVITY:
         return <StartActivity onBack={() => navigate(AppScreen.DASHBOARD)} onStart={handleStartWorkout} />;
       case AppScreen.LIVE_ACTIVITY:
@@ -343,9 +392,9 @@ const App: React.FC = () => {
       case AppScreen.MUSIC:
         return <Music onBack={() => navigate(AppScreen.DASHBOARD)} />;
       case AppScreen.ADMIN_DASHBOARD:
-        return isAdmin ? <AdminDashboard navigate={navigate} avatarGallery={avatarGallery} workoutGallery={workoutGallery} onUpdateAnyUser={handleUpdateAnyUser} /> : <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} />;
+        return isAdmin ? <AdminDashboard navigate={navigate} avatarGallery={avatarGallery} workoutGallery={workoutGallery} onUpdateAnyUser={handleUpdateAnyUser} /> : <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} aiInsight={aiInsight} aiLoading={aiLoading} />;
       default:
-        return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} />;
+        return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} aiInsight={aiInsight} aiLoading={aiLoading} />;
     }
   };
 
