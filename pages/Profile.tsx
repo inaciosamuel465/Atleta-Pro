@@ -71,10 +71,10 @@ const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateU
       <header className="flex items-center px-6 pt-10 pb-6 justify-between border-b border-surface-medium sticky top-0 bg-background-light/90 backdrop-blur-xl z-20">
         <h2 className="text-text-dark text-3xl font-black tracking-tight italic uppercase">Atleta</h2>
         <div className="flex gap-3">
-          <button onClick={handleLogout} className="size-11 flex items-center justify-center rounded-2xl bg-red-500/10 text-red-500 border border-red-500/20">
+          <button onClick={handleLogout} className="size-11 flex items-center justify-center rounded-2xl bg-red-500/10 text-red-500 border border-red-500/20 active:scale-90 transition-all hover:bg-red-500/20">
             <span className="material-symbols-outlined">logout</span>
           </button>
-          <button onClick={() => setIsEditing(true)} className="size-11 flex items-center justify-center rounded-2xl bg-surface-light border border-surface-medium">
+          <button onClick={() => setIsEditing(true)} className="size-11 flex items-center justify-center rounded-2xl bg-surface-light border border-surface-medium active:scale-90 transition-all hover:bg-surface-medium">
             <span className="material-symbols-outlined text-text-dark">settings</span>
           </button>
         </div>
@@ -128,8 +128,8 @@ const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateU
           <div className="w-full max-w-sm bg-surface-light rounded-[3.5rem] p-8 border border-surface-medium space-y-8 animate-in zoom-in-95 duration-300">
             <div className="flex justify-between items-center">
               <h4 className="text-text-dark text-xl font-black uppercase italic tracking-tighter">Escolher Avatar</h4>
-              <button onClick={() => setShowImagePicker(false)} className="text-text-light">
-                <span className="material-symbols-outlined">close</span>
+              <button onClick={() => setShowImagePicker(false)} className="size-10 rounded-xl bg-surface-medium/50 flex items-center justify-center">
+                <span className="material-symbols-outlined text-text-dark">close</span>
               </button>
             </div>
 
@@ -147,7 +147,7 @@ const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateU
                 onClick={() => fileInputRef.current?.click()}
                 className="size-16 rounded-2xl bg-surface-medium/50 flex flex-col items-center justify-center text-primary border-2 border-dashed border-primary/20"
               >
-                <span className="material-symbols-outlined">add_photo_alternate</span>
+                <span className="material-symbols-outlined text-3xl">add_photo_alternate</span>
                 <span className="text-[7px] font-black uppercase">Subir</span>
               </button>
             </div>
@@ -176,7 +176,7 @@ const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateU
               {/* Removido: Link da Foto de Perfil */}
               <div className="space-y-2">
                 <p className="text-text-light text-[9px] font-black uppercase ml-2 italic">Nome</p>
-                <input className="w-full h-12 bg-surface-medium/40 border border-surface-medium rounded-xl px-4 text-text-dark font-black italic outline-none" value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} />
+                <input className="w-full h-12 bg-surface-medium/40 border border-surface-medium rounded-xl px-4 text-text-dark font-black italic outline-none focus:border-primary transition-all placeholder:text-text-light font-bold" value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
