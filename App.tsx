@@ -6,7 +6,7 @@ import { auth, db, storage } from './firebase';
 import { showSuccess, showError } from './src/utils/toast';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-import { AppScreen, UserProfile, Activity, Challenge } from './types';
+import { AppScreen, UserProfile, Activity, Challenge, TrainingProgram, ProgramActivity } from './types';
 import { INITIAL_USER } from './constants';
 
 // Pages
@@ -20,6 +20,7 @@ import Profile from './pages/Profile';
 import Music from './pages/Music';
 import Stats from './pages/Stats';
 import AdminDashboard from './pages/AdminDashboard';
+import TrainingPrograms from './pages/TrainingPrograms'; // Importar a nova tela
 
 // Components
 import BottomNav from './components/BottomNav';
@@ -37,7 +38,8 @@ const App: React.FC = () => {
   const [authLoading, setAuthLoading] = useState(true);
   const [avatarGallery, setAvatarGallery] = useState<string[]>([]);
   const [workoutGallery, setWorkoutGallery] = useState<string[]>([]);
-  const [challenges, setChallenges] = useState<Challenge[]>([]); // Novo estado para desafios
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [trainingPrograms, setTrainingPrograms] = useState<TrainingProgram[]>([]); // Novo estado para programas de treino
   const [aiInsight, setAiInsight] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
@@ -154,12 +156,60 @@ const App: React.FC = () => {
           }
         });
 
+        // 5. Ouvir Programas de Treino em Tempo Real
+        const trainingProgramsRef = collection(db, "trainingPrograms");
+        const unsubTrainingPrograms = onSnapshot(trainingProgramsRef, async (snapshot) => {
+          const loadedPrograms: TrainingProgram[] = [];
+          snapshot.forEach((doc) => {
+            loadedPrograms.push({ id: doc.id, ...doc.data() } as TrainingProgram);
+          });
+          setTrainingPrograms(loadedPrograms);
+
+          // Se a coleção de programas de treino estiver vazia, adicione alguns programas padrão
+          if (loadedPrograms.length === 0) {
+            const defaultPrograms: Omit<TrainingProgram, 'id'>[] = [
+              {
+                name: 'Programa 5K para Iniciantes',
+                description: 'Um programa de 8 semanas para te levar do sofá aos 5km, com foco em consistência e progressão gradual.',
+                durationWeeks: 8,
+                level: 'Iniciante',
+                focus: 'Resistência',
+                image: 'https://images.unsplash.com/photo-1574680096145-d05b4747414c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=720&h=1080&q=80',
+                activities: [
+                  { id: 'act1', day: 1, title: 'Caminhada Leve', description: '30 minutos de caminhada.', type: 'Caminhada', targetTime: 30, isCompleted: false },
+                  { id: 'act2', day: 3, title: 'Corrida/Caminhada', description: 'Alternar 1 min de corrida, 2 min de caminhada (total 20 min).', type: 'Corrida', targetTime: 20, isCompleted: false },
+                  { id: 'act3', day: 5, title: 'Caminhada Longa', description: '45 minutos de caminhada.', type: 'Caminhada', targetTime: 45, isCompleted: false },
+                ]
+              },
+              {
+                name: 'Desafio de Velocidade 10K',
+                description: 'Programa de 12 semanas para melhorar seu tempo nos 10km, com treinos intervalados e de ritmo.',
+                durationWeeks: 12,
+                level: 'Intermediário',
+                focus: 'Velocidade',
+                image: 'https://images.unsplash.com/photo-1505751172876-fa1923c58541?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=720&h=1080&q=80',
+                activities: [
+                  { id: 'act4', day: 1, title: 'Corrida de Base', description: '45 minutos de corrida leve.', type: 'Corrida', targetTime: 45, isCompleted: false },
+                  { id: 'act5', day: 3, title: 'Intervalado Curto', description: 'Aquecimento, 6x (1 min rápido, 2 min lento), desaquecimento.', type: 'Intervalado', targetTime: 30, isCompleted: false },
+                  { id: 'act6', day: 5, title: 'Tempo Run', description: '10 min aquecimento, 20 min ritmo moderado, 10 min desaquecimento.', type: 'Corrida', targetTime: 40, isCompleted: false },
+                ]
+              },
+            ];
+
+            for (const program of defaultPrograms) {
+              await addDoc(trainingProgramsRef, program);
+            }
+            console.log("Programas de treino padrão adicionados ao Firestore.");
+          }
+        });
+
 
         return () => {
           unsubUser();
           unsubActivities();
           unsubAppSettings();
-          unsubChallenges(); // Limpar o listener de desafios
+          unsubChallenges();
+          unsubTrainingPrograms(); // Limpar o listener de programas de treino
         };
       } else {
         setUser(null);
@@ -168,7 +218,8 @@ const App: React.FC = () => {
         setCurrentScreen(AppScreen.INITIALIZE);
         setAvatarGallery([]);
         setWorkoutGallery([]);
-        setChallenges([]); // Limpar desafios ao deslogar
+        setChallenges([]);
+        setTrainingPrograms([]); // Limpar programas de treino ao deslogar
       }
     });
 
@@ -363,7 +414,9 @@ const App: React.FC = () => {
       targetDistance: config.targetDistance,
       targetTime: config.targetTime,
       terrain: config.terrain,
-      voiceCues: config.voiceCues
+      voiceCues: config.voiceCues,
+      programId: config.programId, // Adicionar programId
+      programActivityId: config.programActivityId // Adicionar programActivityId
     });
     navigate(AppScreen.LIVE_ACTIVITY);
   };
@@ -391,7 +444,9 @@ const App: React.FC = () => {
           pace: postWorkoutData.pace || "0'00\"",
           calories: Math.floor((postWorkoutData.distance || 0) * 70),
           heartRate: postWorkoutData.heartRate || 0,
-          createdAt: serverTimestamp()
+          createdAt: serverTimestamp(),
+          programId: activeWorkout?.programId, // Salvar programId
+          programActivityId: activeWorkout?.programActivityId // Salvar programActivityId
         };
         
         // Remove activityImage duplicado se for a mesma coisa que mapImage para economizar espaço
@@ -405,8 +460,22 @@ const App: React.FC = () => {
           await setDoc(doc(activitiesRef, postWorkoutData.id), finalActivity, { merge: true });
           showSuccess("Atividade atualizada com sucesso!");
         } else {
-          await addDoc(activitiesRef, finalActivity);
+          const newActivityRef = await addDoc(activitiesRef, finalActivity);
           showSuccess("Atividade salva com sucesso!");
+
+          // Se a atividade pertencer a um programa, marcar como concluída no perfil do usuário
+          if (finalActivity.programId && finalActivity.programActivityId && user) {
+            const userDocRef = doc(db, "users", auth.currentUser.uid);
+            const completedActivities = user.completedProgramActivities || {};
+            const programCompletedActivities = completedActivities[finalActivity.programId] || [];
+
+            if (!programCompletedActivities.includes(finalActivity.programActivityId)) {
+              programCompletedActivities.push(finalActivity.programActivityId);
+              completedActivities[finalActivity.programId] = programCompletedActivities;
+              await setDoc(userDocRef, { completedProgramActivities: completedActivities }, { merge: true });
+              showSuccess("Atividade do programa marcada como concluída!");
+            }
+          }
         }
         
         setActiveWorkout(null);
@@ -465,6 +534,23 @@ const App: React.FC = () => {
     }
   };
 
+  // Função para o usuário se inscrever em um programa de treino
+  const handleEnrollInProgram = async (programId: string) => {
+    if (user && auth.currentUser) {
+      try {
+        const userDocRef = doc(db, "users", auth.currentUser.uid);
+        await setDoc(userDocRef, { 
+          activeTrainingProgramId: programId,
+          completedProgramActivities: {} // Resetar atividades concluídas para o novo programa
+        }, { merge: true });
+        showSuccess("Você se inscreveu no programa de treino!");
+        navigate(AppScreen.DASHBOARD); // Voltar para o dashboard
+      } catch (error) {
+        console.error("Erro ao se inscrever no programa:", error);
+        showError("Erro ao se inscrever no programa de treino.");
+      }
+    }
+  };
 
   if (authLoading) {
       return <div className="h-screen w-full bg-background-dark flex items-center justify-center">
@@ -515,10 +601,17 @@ const App: React.FC = () => {
           avatarGallery={avatarGallery} 
           workoutGallery={workoutGallery} 
           onUpdateAnyUser={handleUpdateAnyUser} 
-          challenges={challenges} // Passar desafios
-          onUpdateChallenge={handleUpdateChallenge} // Passar função de update
-          onDeleteChallenge={handleDeleteChallenge} // Passar função de delete
+          challenges={challenges} 
+          onUpdateChallenge={handleUpdateChallenge} 
+          onDeleteChallenge={handleDeleteChallenge} 
         /> : <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} aiInsight={aiInsight} aiLoading={aiLoading} challenges={challenges} />;
+      case AppScreen.TRAINING_PROGRAMS: // Nova rota para Programas de Treino
+        return <TrainingPrograms 
+          navigate={navigate} 
+          trainingPrograms={trainingPrograms} 
+          onEnrollInProgram={handleEnrollInProgram}
+          userActiveProgramId={user.activeTrainingProgramId}
+        />;
       default:
         return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} aiInsight={aiInsight} aiLoading={aiLoading} challenges={challenges} />;
     }
