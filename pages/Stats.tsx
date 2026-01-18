@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
 import { AppScreen, Activity, UserProfile } from '../types';
+import L from 'leaflet'; // Importar Leaflet
 
 interface StatsProps {
   navigate: (screen: AppScreen) => void;
@@ -37,6 +38,9 @@ const ALL_ACHIEVEMENTS: AchievementDef[] = [
 const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
   const [timeRange, setTimeRange] = useState<TimeRange>('weekly');
   const [showAllAchievements, setShowAllAchievements] = useState(false);
+
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
 
   const paceToSeconds = (paceStr: string) => {
     const matches = paceStr.match(/(\d+)'\s*(\d+)"/);
@@ -201,6 +205,56 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
       color: zone.color
     })).filter(data => data.value > 0); // Filtra zonas sem atividades
   }, [activities, user]);
+
+  // --- MAPA DE ROTAS ---
+  useEffect(() => {
+    if (!mapContainerRef.current) return;
+
+    if (!mapRef.current) {
+      mapRef.current = L.map(mapContainerRef.current, {
+        zoomControl: false,
+        attributionControl: false,
+        dragging: false,
+        scrollWheelZoom: false,
+        touchZoom: false,
+        zoomSnap: 0.1
+      });
+
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        subdomains: 'abcd',
+        maxZoom: 19
+      }).addTo(mapRef.current);
+    }
+
+    const allCoords: L.LatLngExpression[] = [];
+    activities.forEach(activity => {
+      if (activity.routeCoords && activity.routeCoords.length > 0) {
+        L.polyline(activity.routeCoords, {
+          color: '#258cf4',
+          weight: 3,
+          opacity: 0.7,
+          lineCap: 'round',
+          lineJoin: 'round',
+          className: 'drop-shadow-[0_0_5px_rgba(37,140,244,0.4)]'
+        }).addTo(mapRef.current!);
+        allCoords.push(...activity.routeCoords);
+      }
+    });
+
+    if (allCoords.length > 0) {
+      mapRef.current.fitBounds(L.latLngBounds(allCoords), { padding: [20, 20] });
+    } else {
+      // Default view if no routes (e.g., São Paulo)
+      mapRef.current.setView([-23.5505, -46.6333], 12);
+    }
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, [activities]);
 
 
   return (
@@ -382,6 +436,24 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
             </div>
           </section>
         )}
+
+        {/* Mapa de Rotas de Treino */}
+        <section className="space-y-6">
+          <h3 className="text-white text-xl font-black tracking-tight px-1">Suas Rotas de Treino</h3>
+          <div className="bg-surface-dark p-4 rounded-[3rem] border border-white/5 shadow-2xl relative h-80 overflow-hidden">
+            {activities.some(a => a.routeCoords && a.routeCoords.length > 0) ? (
+              <div id="all-routes-map" ref={mapContainerRef} className="w-full h-full rounded-[2.5rem] overflow-hidden"></div>
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center text-center space-y-4 opacity-40">
+                <span className="material-symbols-outlined text-6xl">map</span>
+                <div>
+                  <p className="text-white font-black">Nenhuma rota registrada</p>
+                  <p className="text-xs text-slate-500 mt-1 uppercase tracking-widest">Comece um treino para ver suas rotas aqui</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
 
         {/* Activity Distribution */}
         <section className="space-y-6">
