@@ -239,7 +239,7 @@ const App: React.FC = () => {
       avgPace = `${mins}'${secs < 10 ? '0' + secs : secs}"`;
     }
 
-    // Calculate weekly distance
+    // Calculate weekly distance (current week: Monday to today)
     const now = new Date();
     now.setHours(0, 0, 0, 0); // Normalize to start of day
 
@@ -258,13 +258,25 @@ const App: React.FC = () => {
       return acc;
     }, 0);
 
+    // Calculate monthly distance (current month: 1st to today)
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const rawMonthlyDistance = activities.reduce((acc, curr) => {
+      const activityDate = new Date(curr.date);
+      activityDate.setHours(0, 0, 0, 0);
+      if (activityDate >= startOfMonth && activityDate <= now) {
+        return acc + (curr.distance || 0);
+      }
+      return acc;
+    }, 0);
+
     return {
-      distance: totalDist.toFixed(1),
+      totalDistance: totalDist.toFixed(1), // Renamed for clarity
       calories: totalCals,
       time: Math.floor(totalSeconds / 3600) + "h " + Math.round(((totalSeconds / 3600) % 1) * 60) + "m",
       pace: avgPace,
-      rawDistance: totalDist,
-      rawWeeklyDistance: rawWeeklyDistance
+      rawTotalDistance: totalDist, // Raw total distance
+      rawWeeklyDistance: rawWeeklyDistance,
+      rawMonthlyDistance: rawMonthlyDistance // New monthly distance
     };
   }, [activities]);
 
@@ -282,7 +294,7 @@ const App: React.FC = () => {
       Status do Usuário: ${user.status}
       Objetivo do Usuário: ${user.goal}
       Personalidade do Treinador: ${user.coachPersonality || 'Motivador'}
-      Distância Total: ${stats.rawDistance} km
+      Distância Total: ${stats.rawTotalDistance} km
       Distância Semanal: ${stats.rawWeeklyDistance} km
       Última Atividade: ${lastActivity?.title || 'Nenhuma'} (${lastActivity?.distance || 0} km em ${lastActivity?.date ? new Date(lastActivity.date).toLocaleDateString('pt-BR') : 'N/A'})
       Foque em motivação, consistência ou alcance de metas. Mantenha o insight com menos de 100 palavras. Comece diretamente com o insight, sem saudações.`;

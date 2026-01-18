@@ -51,34 +51,69 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
   // Lógica de dados do gráfico baseada no range
   const chartData = useMemo(() => {
     const now = new Date();
-    
+    now.setHours(0, 0, 0, 0); // Normaliza para o início do dia
+
     if (timeRange === 'weekly') {
       const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
-      return days.map((day, index) => {
+      const weeklyData = [];
+
+      // Calcula o início da semana atual (segunda-feira)
+      const dayOfWeek = now.getDay(); // 0 para domingo, 1 para segunda
+      const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Se domingo (0), diff é 6 dias para trás. Caso contrário, diff é dayOfWeek - 1.
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - diffToMonday);
+
+      for (let i = 0; i < 7; i++) {
+        const currentDay = new Date(startOfWeek);
+        currentDay.setDate(startOfWeek.getDate() + i);
+        const dayName = days[currentDay.getDay()];
+
         const dailyDist = activities.reduce((acc, act) => {
-          const actDate = new Date(act.date); // Usar diretamente o ISOString
-          const diff = Math.floor((now.getTime() - actDate.getTime()) / (1000 * 3600 * 24));
-          if (actDate.getDay() === index && diff < 7) { // Últimos 7 dias
+          const actDate = new Date(act.date);
+          actDate.setHours(0, 0, 0, 0);
+          if (actDate.getTime() === currentDay.getTime()) {
             return acc + act.distance;
           }
           return acc;
         }, 0);
-        return { name: day, value: parseFloat(dailyDist.toFixed(1)) };
-      });
-    } else {
-      const weeks = ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'];
-      return weeks.map((week, idx) => {
-        const actDate = new Date(); // Usar diretamente o ISOString
-        const weekDist = activities.reduce((acc, act) => {
-          const activityDate = new Date(act.date);
-          const diffDays = Math.floor((actDate.getTime() - activityDate.getTime()) / (1000 * 3600 * 24));
-          const actWeek = Math.floor(diffDays / 7);
-          
-          if (actWeek === (3 - idx) && diffDays < 28) return acc + act.distance; // Últimas 4 semanas
-          return acc;
-        }, 0);
-        return { name: week, value: parseFloat(weekDist.toFixed(1)) };
-      });
+        weeklyData.push({ name: dayName, value: parseFloat(dailyDist.toFixed(1)) });
+      }
+      return weeklyData;
+    } else { // monthly
+      const monthlyData = [];
+
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0); // Último dia do mês atual
+
+      let currentWeekStart = new Date(startOfMonth);
+      // Ajusta currentWeekStart para ser a primeira segunda-feira (ou domingo se a semana começar no domingo) da semana que contém o 1º dia do mês
+      const firstDayOfMonthWeekDay = currentWeekStart.getDay(); // 0 para domingo, 1 para segunda
+      const daysToSubtract = firstDayOfMonthWeekDay === 0 ? 6 : firstDayOfMonthWeekDay - 1; // Se domingo, volta 6 dias para a segunda anterior. Se segunda, 0.
+      currentWeekStart.setDate(startOfMonth.getDate() - daysToSubtract);
+
+      let weekNumberInMonth = 1;
+      // Continua enquanto a semana atual estiver dentro do mês atual ou for a semana que contém o dia de hoje
+      while (currentWeekStart <= endOfMonth || (currentWeekStart.getMonth() === now.getMonth() && currentWeekStart.getDate() <= now.getDate())) {
+          const weekEnd = new Date(currentWeekStart);
+          weekEnd.setDate(currentWeekStart.getDate() + 6);
+
+          const weekDist = activities.reduce((acc, act) => {
+              const activityDate = new Date(act.date);
+              activityDate.setHours(0, 0, 0, 0);
+              // Inclui apenas atividades que caem dentro do mês atual E dentro do segmento da semana atual
+              if (activityDate >= currentWeekStart && activityDate <= weekEnd && activityDate.getMonth() === now.getMonth()) {
+                  return acc + act.distance;
+              }
+              return acc;
+          }, 0);
+
+          monthlyData.push({ name: `Sem ${weekNumberInMonth}`, value: parseFloat(weekDist.toFixed(1)) });
+
+          currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+          weekNumberInMonth++;
+          if (weekNumberInMonth > 6) break; // Um mês pode ter no máximo 6 semanas
+      }
+      return monthlyData;
     }
   }, [activities, timeRange]);
 

@@ -5,7 +5,7 @@ import ChallengeDetailModal from '../components/ChallengeDetailModal';
 interface DashboardProps {
   navigate: (screen: AppScreen) => void;
   user: UserProfile;
-  stats: { distance: string; calories: string | number; time: string; pace: string; rawDistance: number; rawWeeklyDistance: number };
+  stats: { totalDistance: string; calories: string | number; time: string; pace: string; rawTotalDistance: number; rawWeeklyDistance: number; rawMonthlyDistance: number }; // Atualizado
   lastActivity: Activity | undefined;
   isAdmin: boolean;
   aiInsight: string | null;
@@ -17,7 +17,8 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
   const MONTHLY_GOAL = user.monthlyGoal || 80;
   const WEEKLY_GOAL = user.weeklyGoal || 20;
   
-  const monthlyProgressPercent = Math.min(Math.round((stats.rawDistance / MONTHLY_GOAL) * 100), 100);
+  // Usar rawMonthlyDistance para o cálculo do progresso mensal
+  const monthlyProgressPercent = Math.min(Math.round((stats.rawMonthlyDistance / MONTHLY_GOAL) * 100), 100);
   const weeklyProgressPercent = Math.min(Math.round((stats.rawWeeklyDistance / WEEKLY_GOAL) * 100), 100);
 
   const [showChallengeModal, setShowChallengeModal] = useState(false);
@@ -42,7 +43,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
             <div className="absolute -bottom-1 -right-1 size-5 bg-accent-green rounded-full border-4 border-background-dark z-20"></div>
           </div>
           <div>
-            <span className="text-[10px] text-primary font-black uppercase tracking-[0.2em] italic mb-0.5 block animate-pulse">Status: Elite Lvl {Math.floor(stats.rawDistance/5) + 1}</span>
+            <span className="text-[10px] text-primary font-black uppercase tracking-[0.2em] italic mb-0.5 block animate-pulse">Status: Elite Lvl {Math.floor(stats.rawTotalDistance/5) + 1}</span>
             <h2 className="text-white text-3xl font-black tracking-tighter italic uppercase font-lexend leading-none">{user.name.split(' ')[0]}</h2>
           </div>
         </div>
@@ -73,7 +74,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
               <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] mt-1 italic">Road to Performance</p>
             </div>
             <div className="text-right">
-              <span className="text-white text-5xl font-black italic font-lexend tracking-tighter elite-gradient-text">{stats.distance}</span>
+              <span className="text-white text-5xl font-black italic font-lexend tracking-tighter elite-gradient-text">{stats.rawMonthlyDistance.toFixed(1)}</span>
               <span className="text-slate-600 text-xs font-black italic ml-2">/ {MONTHLY_GOAL} KM</span>
             </div>
           </div>
