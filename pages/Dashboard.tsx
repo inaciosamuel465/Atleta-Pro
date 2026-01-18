@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AppScreen, UserProfile, Activity, Challenge } from '../types';
+import { AppScreen, UserProfile, Activity, Challenge, TrainingProgram, ProgramActivity } from '../types';
 import ChallengeDetailModal from '../components/ChallengeDetailModal';
 
 interface DashboardProps {
@@ -11,9 +11,10 @@ interface DashboardProps {
   aiInsight: string | null;
   aiLoading: boolean;
   challenges: Challenge[]; // Nova prop para a lista de desafios
+  nextProgramActivity?: { program: TrainingProgram; activity: ProgramActivity } | null; // Nova prop
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivity, isAdmin, aiInsight, aiLoading, challenges }) => {
+const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivity, isAdmin, aiInsight, aiLoading, challenges, nextProgramActivity }) => {
   const MONTHLY_GOAL = user.monthlyGoal || 80;
   const WEEKLY_GOAL = user.weeklyGoal || 20;
   
@@ -63,6 +64,35 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
       </header>
 
       <main className="px-6 space-y-8 pt-6">
+        {/* Próxima Atividade do Programa de Treino */}
+        {nextProgramActivity && (
+          <section className="bg-surface-light rounded-[3rem] p-8 border border-surface-medium shadow-lg relative overflow-hidden group">
+            <div className="absolute -top-8 -right-8 w-32 h-32 bg-primary/10 blur-[50px] rounded-full group-hover:bg-primary/20 transition-all duration-700"></div>
+            <div className="flex items-center gap-4 mb-6 relative z-10">
+                <div className="size-14 rounded-2xl bg-primary/20 flex items-center justify-center text-primary shadow-inner border border-primary/10">
+                    <span className="material-symbols-outlined text-3xl">event_note</span>
+                </div>
+                <div>
+                    <h3 className="text-text-dark text-xl font-black italic uppercase tracking-tight font-lexend">Próximo Treino</h3>
+                    <p className="text-[10px] text-text-light font-black uppercase tracking-[0.3em] mt-1 italic">{nextProgramActivity.program.name}</p>
+                </div>
+            </div>
+            <p className="text-text-dark text-lg font-bold italic leading-snug font-lexend relative z-10">
+                Dia {nextProgramActivity.activity.day}: {nextProgramActivity.activity.title}
+            </p>
+            <p className="text-text-light text-sm mt-2 relative z-10">
+                {nextProgramActivity.activity.description}
+            </p>
+            <div className="flex justify-between items-center mt-6 relative z-10">
+                <span className="text-[10px] font-black uppercase tracking-widest text-text-light">
+                    {nextProgramActivity.activity.targetDistance ? `${nextProgramActivity.activity.targetDistance} KM` : ''}
+                    {nextProgramActivity.activity.targetTime ? ` ${nextProgramActivity.activity.targetTime} MIN` : ''}
+                </span>
+                <button onClick={() => navigate(AppScreen.TRAINING_PROGRAMS)} className="text-primary text-[10px] font-black uppercase tracking-widest border-b border-primary/20 pb-0.5">Ver Programa</button>
+            </div>
+          </section>
+        )}
+
         {/* Progress Card - "Ultra High" Aesthetic (Monthly Goal) */}
         <section className="bg-gradient-to-br from-surface-light via-surface-medium to-background-light rounded-[3rem] p-10 border border-surface-medium shadow-2xl relative overflow-hidden group">
           <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/10 blur-[80px] rounded-full group-hover:bg-primary/20 transition-all duration-700"></div>
@@ -122,7 +152,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
           <section className="bg-surface-light rounded-[3rem] p-8 border border-surface-medium shadow-lg relative overflow-hidden group">
               <div className={`absolute -top-8 -left-8 w-32 h-32 bg-${weeklyChallenge.color}-500/10 blur-[50px] rounded-full group-hover:bg-${weeklyChallenge.color}-500/20 transition-all duration-700`}></div>
               <div className="flex items-center gap-4 mb-6 relative z-10">
-                  <div className={`size-14 rounded-2xl bg-${weeklyChallenge.color}-500/20 flex items-center justify-center text-${weeklyChallenge.color}-500 shadow-inner border border-${weeklyChallenge.color}-500/10`}>
+                  <div className={`size-14 rounded-2xl bg-${weeklyChallenge.color}/20 flex items-center justify-center text-${weeklyChallenge.color.split('-')[0]}-${weeklyChallenge.color.split('-')[1]} shadow-inner border border-${weeklyChallenge.color}/10`}>
                       <span className="material-symbols-outlined text-3xl">{weeklyChallenge.icon}</span>
                   </div>
                   <div>

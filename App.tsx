@@ -567,6 +567,27 @@ const App: React.FC = () => {
     }
   };
 
+  // Calcula a próxima atividade do programa de treino ativo
+  const nextProgramActivity = useMemo(() => {
+    if (!user || !user.activeTrainingProgramId || !trainingPrograms.length) return null;
+
+    const activeProgram = trainingPrograms.find(p => p.id === user.activeTrainingProgramId);
+    if (!activeProgram) return null;
+
+    const completedActivities = user.completedProgramActivities?.[activeProgram.id] || [];
+    
+    // Encontra a primeira atividade não concluída
+    const nextActivity = activeProgram.activities.find(activity => 
+      !completedActivities.includes(activity.id)
+    );
+
+    if (nextActivity) {
+      return { program: activeProgram, activity: nextActivity };
+    }
+    return null;
+  }, [user, trainingPrograms]);
+
+
   if (authLoading) {
       return <div className="h-screen w-full bg-background-light flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
@@ -588,7 +609,17 @@ const App: React.FC = () => {
 
     switch (currentScreen) {
       case AppScreen.DASHBOARD:
-        return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} aiInsight={aiInsight} aiLoading={aiLoading} challenges={challenges} />;
+        return <Dashboard 
+          navigate={navigate} 
+          user={user} 
+          stats={stats} 
+          lastActivity={activities[0]} 
+          isAdmin={isAdmin} 
+          aiInsight={aiInsight} 
+          aiLoading={aiLoading} 
+          challenges={challenges} 
+          nextProgramActivity={nextProgramActivity} // Passar a próxima atividade
+        />;
       case AppScreen.START_ACTIVITY:
         return <StartActivity 
           onBack={() => navigate(AppScreen.DASHBOARD)} 
