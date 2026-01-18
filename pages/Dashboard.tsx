@@ -5,7 +5,17 @@ import ChallengeDetailModal from '../components/ChallengeDetailModal';
 interface DashboardProps {
   navigate: (screen: AppScreen) => void;
   user: UserProfile;
-  stats: { totalDistance: string; calories: string | number; time: string; pace: string; rawTotalDistance: number; rawWeeklyDistance: number; rawMonthlyDistance: number }; // Atualizado
+  stats: { 
+    totalDistance: string; 
+    calories: string | number; 
+    time: string; 
+    pace: string; 
+    rawTotalDistance: number; 
+    rawWeeklyDistance: number; 
+    rawMonthlyDistance: number;
+    totalActivities: number; // Adicionado
+    totalTimeString: string; // Adicionado
+  }; 
   lastActivity: Activity | undefined;
   isAdmin: boolean;
   aiInsight: string | null;
@@ -265,7 +275,9 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
         <div className="grid grid-cols-2 gap-5">
           {[
             { label: 'Energia', val: stats.calories, unit: 'kcal', icon: 'local_fire_department', color: 'text-accent-orange', bg: 'bg-accent-orange/10' },
-            { label: 'Ritmo Médio', val: stats.pace, unit: '', icon: 'speed', color: 'text-primary', bg: 'bg-primary/10' }
+            { label: 'Ritmo Médio', val: stats.pace, unit: '', icon: 'speed', color: 'text-primary', bg: 'bg-primary/10' },
+            { label: 'Total Ativs', val: stats.totalActivities, unit: '', icon: 'directions_run', color: 'text-emerald-500', bg: 'bg-emerald-500/10' }, // Novo
+            { label: 'Tempo Total', val: stats.totalTimeString, unit: '', icon: 'timer', color: 'text-purple-500', bg: 'bg-purple-500/10' } // Novo
           ].map((item, i) => (
             <div key={i} className="bg-surface-light rounded-[2.5rem] p-8 border border-surface-medium space-y-5 transition-all hover:bg-surface-medium">
               <div className={`size-14 rounded-2xl ${item.bg} ${item.color} flex items-center justify-center shadow-lg`}>

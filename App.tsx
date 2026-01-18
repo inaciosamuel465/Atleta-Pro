@@ -360,7 +360,11 @@ const App: React.FC = () => {
       pace: avgPace,
       rawTotalDistance: totalDist, // Raw total distance
       rawWeeklyDistance: rawWeeklyDistance,
-      rawMonthlyDistance: rawMonthlyDistance // New monthly distance
+      rawMonthlyDistance: rawMonthlyDistance, // New monthly distance
+      totalActivities: activities.length, // Adicionado: Total de atividades
+      totalTimeString: Math.floor(totalSeconds / 3600) > 0 
+        ? `${Math.floor(totalSeconds / 3600)}h ${Math.round(((totalSeconds / 3600) % 1) * 60)}m` 
+        : `${Math.round(totalSeconds / 60)}m`, // Adicionado: Tempo total formatado
     };
   }, [activities]);
 
