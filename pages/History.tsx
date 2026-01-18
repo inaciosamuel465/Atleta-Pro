@@ -23,7 +23,7 @@ const History: React.FC<HistoryProps> = ({ navigate, activities, onViewActivity 
     <div className="bg-background-light min-h-screen pb-32">
       <header className="flex flex-col px-6 pt-10 pb-6 sticky top-0 bg-background-light/95 backdrop-blur-xl z-20 border-b border-surface-medium">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-text-dark text-3xl font-black tracking-tight italic">Atividades</h2>
+          <h2 className="text-text-dark text-3xl font-black tracking-tight italic font-lexend">Atividades</h2>
           <button className="size-11 flex items-center justify-center rounded-2xl bg-surface-light border border-surface-medium hover:bg-surface-medium transition-colors">
             <span className="material-symbols-outlined text-text-dark">search</span>
           </button>
