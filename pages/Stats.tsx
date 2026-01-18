@@ -294,10 +294,12 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
 
   return (
     <div className="bg-background-light min-h-screen pb-40 no-scrollbar overflow-y-auto relative">
-      <header className="flex flex-col px-6 pt-10 pb-6 sticky top-0 bg-background-light/90 backdrop-blur-xl z-20 border-b border-surface-medium">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-text-dark text-3xl font-black tracking-tight italic">Performance</h2>
-          <div className="flex bg-surface-light/50 p-1 rounded-2xl border border-surface-medium">
+      <header className="flex items-center px-6 pt-10 pb-6 justify-between border-b border-surface-medium sticky top-0 bg-background-light/90 backdrop-blur-xl z-20">
+        <button onClick={() => navigate(AppScreen.DASHBOARD)} className="size-11 flex items-center justify-center rounded-2xl bg-surface-light border border-surface-medium hover:bg-surface-medium transition-colors">
+          <span className="material-symbols-outlined text-text-dark">arrow_back</span>
+        </button>
+        <h2 className="text-text-dark text-3xl font-black tracking-tight italic uppercase">Performance</h2>
+        <div className="flex bg-surface-light/50 p-1 rounded-2xl border border-surface-medium">
              <button 
                onClick={() => setTimeRange('weekly')}
                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${timeRange === 'weekly' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-medium hover:text-text-dark'}`}
@@ -311,7 +313,6 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
                Mensal
              </button>
           </div>
-        </div>
       </header>
 
       <main className="px-6 pt-8 space-y-10">
@@ -324,7 +325,7 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
               <span className="text-[10px] font-black">{timeRange === 'weekly' ? '+18.5% esta semana' : '+42% este mês'}</span>
             </div>
           </div>
-          <div className="bg-surface-light p-8 rounded-[3rem] border border-surface-medium shadow-2xl relative h-72 group">
+          <div className="bg-surface-light p-8 rounded-[2.5rem] border border-surface-medium shadow-2xl relative h-72 group">
             <div className="absolute top-8 right-8 flex items-center gap-2 opacity-40 group-hover:opacity-100 transition-opacity">
                <div className="size-2 rounded-full bg-primary animate-pulse"></div>
                <span className="text-[8px] font-black uppercase tracking-[0.3em] text-text-light">Dados em tempo real</span>
@@ -442,7 +443,7 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
         {hrZoneDistribution.length > 0 && (
           <section className="space-y-6">
             <h3 className="text-text-dark text-xl font-black tracking-tight px-1">Zonas de Frequência Cardíaca</h3>
-            <div className="bg-surface-light p-8 rounded-[3rem] border border-surface-medium shadow-2xl relative h-72">
+            <div className="bg-surface-light p-8 rounded-[2.5rem] border border-surface-medium shadow-2xl relative h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={hrZoneDistribution} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#00000005" />
@@ -475,9 +476,9 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
         {/* Mapa de Rotas de Treino */}
         <section className="space-y-6">
           <h3 className="text-text-dark text-xl font-black tracking-tight px-1">Suas Rotas de Treino</h3>
-          <div className="bg-surface-light p-4 rounded-[3rem] border border-surface-medium shadow-2xl relative h-80 overflow-hidden">
+          <div className="bg-surface-light p-4 rounded-[2.5rem] border border-surface-medium shadow-2xl relative h-80 overflow-hidden">
             {activities.some(a => a.routeCoords && a.routeCoords.length > 0) ? (
-              <div id="all-routes-map" ref={mapContainerRef} className="w-full h-full rounded-[2.5rem] overflow-hidden"></div>
+              <div id="all-routes-map" ref={mapContainerRef} className="w-full h-full rounded-[2rem] overflow-hidden"></div>
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-center space-y-4 opacity-40">
                 <span className="material-symbols-outlined text-6xl text-text-light">map</span>
@@ -493,7 +494,7 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
         {/* Activity Distribution */}
         <section className="space-y-6">
            <h3 className="text-text-dark text-xl font-black tracking-tight px-1">Distribuição de Atividades</h3>
-           <div className="bg-surface-light p-8 rounded-[3rem] border border-surface-medium flex items-center justify-between shadow-2xl overflow-hidden relative">
+           <div className="bg-surface-light p-8 rounded-[2.5rem] border border-surface-medium flex items-center justify-between shadow-2xl overflow-hidden relative">
               <div className="h-40 w-1/2">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={typeDistribution}>
@@ -529,7 +530,7 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
            </div>
            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 -mx-6 px-6">
               {unlockedAchievements.map((badge) => (
-                <div key={badge.id} className="shrink-0 w-32 h-40 bg-surface-light border border-surface-medium rounded-[2.2rem] flex flex-col items-center justify-center gap-3 p-4 shadow-xl active:scale-95 transition-transform">
+                <div key={badge.id} className="shrink-0 w-32 h-40 bg-surface-light border border-surface-medium rounded-[2.5rem] flex flex-col items-center justify-center gap-3 p-4 shadow-xl active:scale-95 transition-transform">
                    <div className={`size-14 rounded-2xl flex items-center justify-center ${badge.bg} ${badge.color} shadow-lg shadow-black/20`}>
                       <span className="material-symbols-outlined text-[32px]">{badge.icon}</span>
                    </div>
@@ -585,7 +586,7 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
                 })}
              </div>
              
-             <div className="mt-12 p-8 bg-primary/5 rounded-[3rem] border border-primary/10 flex flex-col items-center text-center gap-4">
+             <div className="mt-12 p-8 bg-primary/5 rounded-[2.5rem] border border-primary/10 flex flex-col items-center text-center gap-4">
                 <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                   <span className="material-symbols-outlined text-3xl">emoji_events</span>
                 </div>
