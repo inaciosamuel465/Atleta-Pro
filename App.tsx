@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai'; // Corrigido: GoogleGenerativeAI
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, onSnapshot, collection, query, orderBy, setDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
@@ -20,6 +20,7 @@ import Profile from './pages/Profile';
 import Music from './pages/Music';
 import Stats from './pages/Stats';
 import AdminDashboard from './pages/AdminDashboard';
+import TrainingPlan from './pages/TrainingPlan'; // Importar o novo componente
 
 // Components
 import BottomNav from './components/BottomNav';
@@ -135,7 +136,7 @@ const App: React.FC = () => {
       const getInsight = async () => {
         setIsGeneratingInsight(true);
         try {
-          const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+          const ai = new GoogleGenerativeAI({ apiKey: process.env.API_KEY }); // Corrigido: GoogleGenerativeAI
           const lastActivity = activities[0];
           const today = new Date().toLocaleDateString('pt-BR');
           
@@ -394,6 +395,8 @@ const App: React.FC = () => {
         return <Music onBack={() => navigate(AppScreen.DASHBOARD)} />;
       case AppScreen.ADMIN_DASHBOARD:
         return isAdmin ? <AdminDashboard navigate={navigate} avatarGallery={avatarGallery} workoutGallery={workoutGallery} onUpdateAnyUser={handleUpdateAnyUser} /> : <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} aiInsight={aiInsight} isGeneratingInsight={isGeneratingInsight} isAdmin={isAdmin} />;
+      case AppScreen.TRAINING_PLAN: // Nova tela
+        return <TrainingPlan navigate={navigate} user={user} activities={activities} apiKey={process.env.API_KEY || ''} />;
       default:
         return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} aiInsight={aiInsight} isGeneratingInsight={isGeneratingInsight} isAdmin={isAdmin} />;
     }

@@ -155,6 +155,12 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
                   </div>
                 </div>
               </div>
+              <button 
+                onClick={() => navigate(AppScreen.TRAINING_PLAN)} // Botão para o plano de treino
+                className="text-primary text-[10px] font-black uppercase tracking-widest border-b border-primary/20 pb-0.5"
+              >
+                Gerar Plano IA
+              </button>
             </div>
             <p className="text-white text-xl font-bold italic leading-snug font-lexend">
               {isGeneratingInsight ? "Computando sua performance de hoje..." : aiInsight?.message || "Otimize seu ritmo hoje para alcançar o Lvl 5 até o final da semana."}

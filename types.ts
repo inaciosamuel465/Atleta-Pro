@@ -8,7 +8,8 @@ export enum AppScreen {
   PROFILE = 'PROFILE',
   MUSIC = 'MUSIC',
   STATS = 'STATS',
-  ADMIN_DASHBOARD = 'ADMIN_DASHBOARD' // Nova tela para o portal de administração
+  ADMIN_DASHBOARD = 'ADMIN_DASHBOARD',
+  TRAINING_PLAN = 'TRAINING_PLAN' // Nova tela para o plano de treino
 }
 
 export interface Lap {
