@@ -63,9 +63,10 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities }) => {
     } else {
       const weeks = ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'];
       return weeks.map((week, idx) => {
+        const actDate = new Date(); // Usar diretamente o ISOString
         const weekDist = activities.reduce((acc, act) => {
-          const actDate = new Date(act.date); // Usar diretamente o ISOString
-          const diffDays = Math.floor((now.getTime() - actDate.getTime()) / (1000 * 3600 * 24));
+          const activityDate = new Date(act.date);
+          const diffDays = Math.floor((actDate.getTime() - activityDate.getTime()) / (1000 * 3600 * 24));
           const actWeek = Math.floor(diffDays / 7);
           
           if (actWeek === (3 - idx) && diffDays < 28) return acc + act.distance; // Últimas 4 semanas
@@ -114,6 +115,55 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities }) => {
   const totalElevation = useMemo(() => 
     Math.round(activities.reduce((acc, a) => acc + (a.distance * 12.5), 0)),
   [activities]);
+
+  // --- CÁLCULO DE RECORDES PESSOAIS (PRs) ---
+  const personalRecords = useMemo(() => {
+    let fastest1kPace = "99'99\"";
+    let fastest5kPace = "99'99\"";
+    let fastest10kPace = "99'99\"";
+    let longestDistance = 0;
+    let highestCalories = 0;
+
+    activities.forEach(activity => {
+      // Fastest Pace (overall, assuming pace is for 1km)
+      if (paceToSeconds(activity.pace) < paceToSeconds(fastest1kPace)) {
+        fastest1kPace = activity.pace;
+      }
+
+      // Fastest 5k Pace (simplified: if activity is around 5k, check its pace)
+      if (activity.distance >= 4.8 && activity.distance <= 5.2) { // +/- 0.2km tolerance
+        if (paceToSeconds(activity.pace) < paceToSeconds(fastest5kPace)) {
+          fastest5kPace = activity.pace;
+        }
+      }
+
+      // Fastest 10k Pace (simplified: if activity is around 10k, check its pace)
+      if (activity.distance >= 9.8 && activity.distance <= 10.2) { // +/- 0.2km tolerance
+        if (paceToSeconds(activity.pace) < paceToSeconds(fastest10kPace)) {
+          fastest10kPace = activity.pace;
+        }
+      }
+
+      // Longest Distance
+      if (activity.distance > longestDistance) {
+        longestDistance = activity.distance;
+      }
+
+      // Highest Calories
+      if (activity.calories > highestCalories) {
+        highestCalories = activity.calories;
+      }
+    });
+
+    return {
+      fastest1kPace: fastest1kPace === "99'99\"" ? "--'--\"" : fastest1kPace,
+      fastest5kPace: fastest5kPace === "99'99\"" ? "--'--\"" : fastest5kPace,
+      fastest10kPace: fastest10kPace === "99'99\"" ? "--'--\"" : fastest10kPace,
+      longestDistance: longestDistance.toFixed(1),
+      highestCalories: highestCalories,
+    };
+  }, [activities]);
+
 
   return (
     <div className="bg-[#101922] min-h-screen pb-40 no-scrollbar overflow-y-auto relative">
@@ -226,6 +276,38 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities }) => {
                 <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Tempo Total</p>
              </div>
              <p className="text-4xl font-black text-white italic tracking-tighter">{totalTimeString}</p>
+          </div>
+        </section>
+
+        {/* Seção de Recordes Pessoais (PRs) */}
+        <section className="space-y-6">
+          <h3 className="text-white text-xl font-black tracking-tight px-1">Recordes Pessoais</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-surface-dark rounded-[2.5rem] p-6 border border-white/5 space-y-2 relative overflow-hidden group">
+              <span className="material-symbols-outlined absolute top-4 right-4 text-primary/10 text-5xl group-hover:scale-110 transition-transform">star</span>
+              <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest">Ritmo 1KM</p>
+              <p className="text-white text-3xl font-black italic">{personalRecords.fastest1kPace}</p>
+            </div>
+            <div className="bg-surface-dark rounded-[2.5rem] p-6 border border-white/5 space-y-2 relative overflow-hidden group">
+              <span className="material-symbols-outlined absolute top-4 right-4 text-primary/10 text-5xl group-hover:scale-110 transition-transform">star</span>
+              <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest">Ritmo 5KM</p>
+              <p className="text-white text-3xl font-black italic">{personalRecords.fastest5kPace}</p>
+            </div>
+            <div className="bg-surface-dark rounded-[2.5rem] p-6 border border-white/5 space-y-2 relative overflow-hidden group">
+              <span className="material-symbols-outlined absolute top-4 right-4 text-primary/10 text-5xl group-hover:scale-110 transition-transform">star</span>
+              <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest">Ritmo 10KM</p>
+              <p className="text-white text-3xl font-black italic">{personalRecords.fastest10kPace}</p>
+            </div>
+            <div className="bg-surface-dark rounded-[2.5rem] p-6 border border-white/5 space-y-2 relative overflow-hidden group">
+              <span className="material-symbols-outlined absolute top-4 right-4 text-primary/10 text-5xl group-hover:scale-110 transition-transform">star</span>
+              <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest">Maior Distância</p>
+              <p className="text-white text-3xl font-black italic">{personalRecords.longestDistance} <span className="text-sm font-normal text-slate-500 not-italic ml-1">km</span></p>
+            </div>
+            <div className="bg-surface-dark rounded-[2.5rem] p-6 border border-white/5 space-y-2 relative overflow-hidden group">
+              <span className="material-symbols-outlined absolute top-4 right-4 text-primary/10 text-5xl group-hover:scale-110 transition-transform">star</span>
+              <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest">Mais Calorias</p>
+              <p className="text-white text-3xl font-black italic">{personalRecords.highestCalories} <span className="text-sm font-normal text-slate-500 not-italic ml-1">kcal</span></p>
+            </div>
           </div>
         </section>
 
