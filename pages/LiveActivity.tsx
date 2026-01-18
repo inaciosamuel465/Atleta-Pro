@@ -125,7 +125,8 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
         mapRef.current.remove();
         mapRef.current = null;
         polylineRef.current = null;
-        markerRef.current = null;
+        // Removed startMarkerRef.current = null;
+        // Removed endMarkerRef.current = null;
       }
     };
   }, [isTreadmillMode]); // Only re-run if treadmill mode changes
@@ -171,7 +172,7 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
           const newCoord: [number, number] = [latitude, longitude];
           setGpsAccuracy(accuracy);
 
-          // Filtro de Precisão: Ignora pontos com precisão pior que 50 metros (ajustado de 25m)
+          // Filtro de Precisão: Ignora pontos com precisão pior que 50 metros
           if (accuracy > 50) return;
 
           setGpsDistance(prevGpsDistance => {
@@ -183,16 +184,28 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
                 longitude
               );
               
-              // Filtro de Jitter (Ruído):
-              // Ignora movimentos menores que 4 metros (0.004km) para evitar "andar parado"
-              // Filtro de Teleporte:
-              // Ignora se a velocidade implícita for > 35km/h (aprox 10m/s) em um intervalo curto
               const timeDelta = (pos.timestamp - lastPosRef.current.timestamp) / 1000; // segundos
-              const impliedSpeed = (d * 1000) / timeDelta; // m/s
+              let calculatedSpeed = 0;
 
-              if (d > 0.004 && impliedSpeed < 10) { 
+              if (timeDelta > 0) { // Evita divisão por zero
+                calculatedSpeed = (d * 1000) / timeDelta * 3.6; // m/s para km/h
+              }
+
+              // Atualiza a velocidade atual de forma mais direta, com alguns filtros
+              // Se pos.coords.speed estiver disponível e parecer razoável, usa-o. Caso contrário, usa calculatedSpeed.
+              if (speed !== null && speed * 3.6 < 100) { // Verificação básica de sanidade para velocidade do dispositivo
+                setCurrentSpeed(speed * 3.6);
+              } else if (calculatedSpeed > 0.5 && calculatedSpeed < 100) { // Usa velocidade calculada se a do dispositivo for ruim/nula e for razoável
+                setCurrentSpeed(calculatedSpeed);
+              } else {
+                setCurrentSpeed(0); // Se nenhuma velocidade confiável, assume parado
+              }
+
+              // Lógica de acumulação de distância (mantém filtros existentes)
+              // Filtra movimentos muito pequenos (jitter) e saltos grandes e irrealistas (teletransporte)
+              const impliedSpeedForDistanceFilter = (d * 1000) / timeDelta; // m/s
+              if (d > 0.004 && impliedSpeedForDistanceFilter < 10) { 
                 setRoute(prev => [...prev, newCoord]);
-                if (speed !== null) setCurrentSpeed(speed * 3.6); // m/s to km/h
                 return prevGpsDistance + d;
               }
             }
