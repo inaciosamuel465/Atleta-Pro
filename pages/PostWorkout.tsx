@@ -386,8 +386,7 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, o
 
   return (
     <div className="bg-background-light min-h-screen text-text-dark flex flex-col relative animate-in fade-in duration-500 pb-20 overflow-y-auto no-scrollbar">
-      <header className="sticky top-0 left-0 w-full z-50 bg-background-light/80 backdrop-blur-2xl border-b border-surface-medium">
-        <div className="flex items-center justify-between px-6 py-5 max-w-md mx-auto">
+      <header className="flex items-center px-6 pt-10 pb-6 justify-between border-b border-surface-medium sticky top-0 bg-background-light/90 backdrop-blur-xl z-50 max-w-md mx-auto">
           <button onClick={isHistorical && onClose ? onClose : onDiscard} className="size-11 flex items-center justify-center rounded-2xl bg-surface-light border border-surface-medium active:scale-90 transition-all hover:bg-surface-medium">
             <span className="material-symbols-outlined text-text-dark text-2xl">close</span>
           </button>
@@ -401,7 +400,6 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, o
           >
             <span className="material-symbols-outlined text-xl">ios_share</span>
           </button>
-        </div>
       </header>
 
       <main className="flex-1 pt-8 px-6 max-w-md mx-auto w-full">
