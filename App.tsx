@@ -337,7 +337,7 @@ const App: React.FC = () => {
       case AppScreen.HISTORY:
         return <History navigate={navigate} activities={activities} onViewActivity={(a) => { setActiveWorkout(a); navigate(AppScreen.POST_WORKOUT); }} />;
       case AppScreen.STATS:
-        return <Stats navigate={navigate} activities={activities} />;
+        return <Stats navigate={navigate} activities={activities} user={user} />;
       case AppScreen.PROFILE:
         return <Profile navigate={navigate} user={user} activities={activities} onUpdateUser={handleUpdateUser} onLogout={handleLogout} avatarGallery={avatarGallery} />;
       case AppScreen.MUSIC:

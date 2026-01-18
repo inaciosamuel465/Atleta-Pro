@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
-import { AppScreen, Activity } from '../types';
+import { AppScreen, Activity, UserProfile } from '../types';
 
 interface StatsProps {
   navigate: (screen: AppScreen) => void;
   activities: Activity[];
+  user: UserProfile; // Adicionado prop user
 }
 
 type TimeRange = 'weekly' | 'monthly';
@@ -33,7 +34,7 @@ const ALL_ACHIEVEMENTS: AchievementDef[] = [
   { id: '8', title: 'Centurion', desc: 'Acumulou 100km (Meta de Elite)', icon: 'workspace_premium', color: 'text-cyan-400', bg: 'bg-cyan-400/10', requirement: (acts) => acts.reduce((acc, a) => acc + a.distance, 0) >= 100 },
 ];
 
-const Stats: React.FC<StatsProps> = ({ navigate, activities }) => {
+const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
   const [timeRange, setTimeRange] = useState<TimeRange>('weekly');
   const [showAllAchievements, setShowAllAchievements] = useState(false);
 
@@ -163,6 +164,43 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities }) => {
       highestCalories: highestCalories,
     };
   }, [activities]);
+
+  // --- CÁLCULO E DISTRIBUIÇÃO DE ZONAS DE FREQUÊNCIA CARDÍACA ---
+  const hrZoneDistribution = useMemo(() => {
+    if (!user || !user.age) return [];
+
+    const maxHR = 220 - user.age; // Fórmula simplificada para FC Máxima
+
+    // Definição das zonas de FC (percentual da FC Máxima)
+    const zones = [
+      { name: 'Zona 1 (50-60%)', min: 0.50, max: 0.60, color: '#10b981' }, // Verde (Recuperação)
+      { name: 'Zona 2 (60-70%)', min: 0.60, max: 0.70, color: '#258cf4' }, // Azul (Aeróbica Leve)
+      { name: 'Zona 3 (70-80%)', min: 0.70, max: 0.80, color: '#f59e0b' }, // Laranja (Aeróbica Moderada)
+      { name: 'Zona 4 (80-90%)', min: 0.80, max: 0.90, color: '#ef4444' }, // Vermelho (Limiar)
+      { name: 'Zona 5 (90-100%)', min: 0.90, max: 1.00, color: '#dc2626' }, // Vermelho Escuro (Máxima)
+    ];
+
+    const zoneCounts: { [key: string]: number } = {};
+    zones.forEach(zone => zoneCounts[zone.name] = 0);
+
+    activities.forEach(activity => {
+      if (activity.heartRate && activity.heartRate > 0) {
+        const hrPercentage = activity.heartRate / maxHR;
+        for (const zone of zones) {
+          if (hrPercentage >= zone.min && hrPercentage < zone.max) {
+            zoneCounts[zone.name]++;
+            break;
+          }
+        }
+      }
+    });
+
+    return zones.map(zone => ({
+      name: zone.name.split(' ')[0], // Apenas o nome da zona (ex: "Zona 1")
+      value: zoneCounts[zone.name],
+      color: zone.color
+    })).filter(data => data.value > 0); // Filtra zonas sem atividades
+  }, [activities, user]);
 
 
   return (
@@ -311,6 +349,40 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities }) => {
           </div>
         </section>
 
+        {/* Distribuição de Zonas de Frequência Cardíaca */}
+        {hrZoneDistribution.length > 0 && (
+          <section className="space-y-6">
+            <h3 className="text-white text-xl font-black tracking-tight px-1">Zonas de Frequência Cardíaca</h3>
+            <div className="bg-surface-dark p-8 rounded-[3rem] border border-white/5 shadow-2xl relative h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={hrZoneDistribution} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#ffffff05" />
+                  <XAxis type="number" hide />
+                  <YAxis 
+                    dataKey="name" 
+                    type="category" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#475569', fontSize: 10, fontWeight: 800 }} 
+                    width={80}
+                  />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#182634', border: '1px solid #ffffff10', borderRadius: '16px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}
+                    itemStyle={{ color: '#fff', fontWeight: 900 }}
+                    labelStyle={{ color: '#94a3b8', fontWeight: 800, marginBottom: '4px' }}
+                    formatter={(value: number, name: string) => [`${value} Atividades`, name]}
+                  />
+                  <Bar dataKey="value" radius={[0, 10, 10, 0]} animationDuration={1000}>
+                    {hrZoneDistribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </section>
+        )}
+
         {/* Activity Distribution */}
         <section className="space-y-6">
            <h3 className="text-white text-xl font-black tracking-tight px-1">Distribuição de Atividades</h3>
@@ -329,11 +401,8 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities }) => {
               <div className="space-y-4 w-1/2 pl-6">
                 {typeDistribution.map((t, i) => (
                   <div key={i} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="size-3 rounded-full" style={{ backgroundColor: t.color }}></div>
-                      <span className="text-[10px] font-black uppercase text-slate-400">{t.name}</span>
-                    </div>
-                    <span className="text-white font-black italic">{t.value}</span>
+                    <div className="size-3 rounded-full" style={{ backgroundColor: t.color }}></div>
+                    <span className="text-[10px] font-black uppercase text-slate-400">{t.name}</span>
                   </div>
                 ))}
               </div>
