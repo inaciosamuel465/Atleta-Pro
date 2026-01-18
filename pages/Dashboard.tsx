@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AppScreen, UserProfile, Activity, Challenge } from '../types'; // AIInsight removido
+import { AppScreen, UserProfile, Activity, Challenge } from '../types';
 import ChallengeDetailModal from '../components/ChallengeDetailModal';
 
 interface DashboardProps {
@@ -8,11 +8,12 @@ interface DashboardProps {
   stats: { distance: string; calories: string | number; time: string; pace: string; rawDistance: number; rawWeeklyDistance: number };
   lastActivity: Activity | undefined;
   isAdmin: boolean;
-  aiInsight: string | null; // Nova prop para o insight da IA
-  aiLoading: boolean; // Nova prop para o estado de carregamento da IA
+  aiInsight: string | null;
+  aiLoading: boolean;
+  challenges: Challenge[]; // Nova prop para a lista de desafios
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivity, isAdmin, aiInsight, aiLoading }) => {
+const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivity, isAdmin, aiInsight, aiLoading, challenges }) => {
   const MONTHLY_GOAL = user.monthlyGoal || 80;
   const WEEKLY_GOAL = user.weeklyGoal || 20;
   
@@ -20,15 +21,14 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
   const weeklyProgressPercent = Math.min(Math.round((stats.rawWeeklyDistance / WEEKLY_GOAL) * 100), 100);
 
   const [showChallengeModal, setShowChallengeModal] = useState(false);
+  const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
 
-  // Desafio semanal fictício para demonstração
-  const weeklyChallenge: Challenge = {
-    id: 'weekly-run-5k',
-    title: 'Desafio da Semana',
-    description: 'Complete 3 treinos de corrida acima de 5km para ganhar a medalha "Maratonista Júnior" e 50 pontos de XP!',
-    progress: '33%', // Exemplo de progresso
-    icon: 'military_tech',
-    color: 'orange',
+  // Seleciona o primeiro desafio da lista para ser o "Desafio da Semana"
+  const weeklyChallenge = challenges.length > 0 ? challenges[0] : null;
+
+  const handleShowChallengeDetails = (challenge: Challenge) => {
+    setSelectedChallenge(challenge);
+    setShowChallengeModal(true);
   };
 
   return (
@@ -116,26 +116,35 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
             </div>
         </section>
 
-        {/* Weekly Challenge Card */}
-        <section className="bg-surface-dark/40 rounded-[3rem] p-8 border border-white/[0.05] shadow-lg relative overflow-hidden group">
-            <div className="absolute -top-8 -left-8 w-32 h-32 bg-orange-500/10 blur-[50px] rounded-full group-hover:bg-orange-500/20 transition-all duration-700"></div>
-            <div className="flex items-center gap-4 mb-6 relative z-10">
-                <div className="size-14 rounded-2xl bg-accent-orange/20 flex items-center justify-center text-accent-orange shadow-inner border border-accent-orange/10">
-                    <span className="material-symbols-outlined text-3xl">military_tech</span>
-                </div>
-                <div>
-                    <h3 className="text-white text-xl font-black italic uppercase tracking-tight font-lexend">Desafio da Semana</h3>
-                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] mt-1 italic">Conquiste a Glória</p>
-                </div>
+        {/* Weekly Challenge Card (Dynamic) */}
+        {weeklyChallenge ? (
+          <section className="bg-surface-dark/40 rounded-[3rem] p-8 border border-white/[0.05] shadow-lg relative overflow-hidden group">
+              <div className={`absolute -top-8 -left-8 w-32 h-32 bg-${weeklyChallenge.color}-500/10 blur-[50px] rounded-full group-hover:bg-${weeklyChallenge.color}-500/20 transition-all duration-700`}></div>
+              <div className="flex items-center gap-4 mb-6 relative z-10">
+                  <div className={`size-14 rounded-2xl bg-${weeklyChallenge.color}-500/20 flex items-center justify-center text-${weeklyChallenge.color}-500 shadow-inner border border-${weeklyChallenge.color}-500/10`}>
+                      <span className="material-symbols-outlined text-3xl">{weeklyChallenge.icon}</span>
+                  </div>
+                  <div>
+                      <h3 className="text-white text-xl font-black italic uppercase tracking-tight font-lexend">Desafio da Semana</h3>
+                      <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] mt-1 italic">Conquiste a Glória</p>
+                  </div>
+              </div>
+              <p className="text-white text-lg font-bold italic leading-snug font-lexend relative z-10">
+                  {weeklyChallenge.description}
+              </p>
+              <div className="flex justify-between items-center mt-6 relative z-10">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Progresso: {weeklyChallenge.progress}</span>
+                  <button onClick={() => handleShowChallengeDetails(weeklyChallenge)} className="text-primary text-[10px] font-black uppercase tracking-widest border-b border-primary/20 pb-0.5">Ver Detalhes</button>
+              </div>
+          </section>
+        ) : (
+          <section className="bg-surface-dark/20 rounded-[3rem] py-20 flex flex-col items-center justify-center border border-dashed border-white/10 opacity-50 group hover:opacity-100 transition-opacity">
+            <div className="size-20 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover:animate-bounce">
+              <span className="material-symbols-outlined text-4xl text-slate-500">military_tech</span>
             </div>
-            <p className="text-white text-lg font-bold italic leading-snug font-lexend relative z-10">
-                {weeklyChallenge.description}
-            </p>
-            <div className="flex justify-between items-center mt-6 relative z-10">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Progresso: {weeklyChallenge.progress}</span>
-                <button onClick={() => setShowChallengeModal(true)} className="text-primary text-[10px] font-black uppercase tracking-widest border-b border-primary/20 pb-0.5">Ver Detalhes</button>
-            </div>
-        </section>
+            <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">Nenhum desafio ativo no momento</p>
+          </section>
+        )}
 
         {/* Performance Tip Widget (AI Insight) */}
         <section className="relative group">
@@ -229,9 +238,9 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
         </section>
       </main>
 
-      {showChallengeModal && (
+      {showChallengeModal && selectedChallenge && (
         <ChallengeDetailModal 
-          challenge={weeklyChallenge} 
+          challenge={selectedChallenge} 
           onClose={() => setShowChallengeModal(false)} 
         />
       )}

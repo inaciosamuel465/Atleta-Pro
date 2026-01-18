@@ -4,9 +4,9 @@ import { doc, onSnapshot, collection, query, orderBy, setDoc, addDoc, serverTime
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { auth, db, storage } from './firebase';
 import { showSuccess, showError } from './src/utils/toast';
-import { GoogleGenerativeAI } from '@google/generative-ai'; // Importar GoogleGenerativeAI do pacote correto
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-import { AppScreen, UserProfile, Activity } from './types'; // AIInsight removido
+import { AppScreen, UserProfile, Activity, Challenge } from './types';
 import { INITIAL_USER } from './constants';
 
 // Pages
@@ -25,7 +25,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import BottomNav from './components/BottomNav';
 
 // Inicializar a API Gemini
-const API_KEY = process.env.GEMINI_API_KEY; // Usar process.env diretamente
+const API_KEY = process.env.GEMINI_API_KEY;
 const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY as string) : null;
 const model = genAI ? genAI.getGenerativeModel({ model: "gemini-pro" }) : null;
 
@@ -37,8 +37,9 @@ const App: React.FC = () => {
   const [authLoading, setAuthLoading] = useState(true);
   const [avatarGallery, setAvatarGallery] = useState<string[]>([]);
   const [workoutGallery, setWorkoutGallery] = useState<string[]>([]);
-  const [aiInsight, setAiInsight] = useState<string | null>(null); // Estado para o insight da IA
-  const [aiLoading, setAiLoading] = useState(false); // Estado de carregamento da IA
+  const [challenges, setChallenges] = useState<Challenge[]>([]); // Novo estado para desafios
+  const [aiInsight, setAiInsight] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
   const isAdmin = user?.email === 'admin@atleta.com';
 
@@ -63,7 +64,6 @@ const App: React.FC = () => {
 
         // 2. Ouvir Atividades em Tempo Real (Ordenadas por data de criação)
         const activitiesRef = collection(db, "users", firebaseUser.uid, "activities");
-        // Adicionando ordenação por 'createdAt' em ordem decrescente
         const q = query(activitiesRef, orderBy('createdAt', 'desc')); 
         
         const unsubActivities = onSnapshot(q, (snapshot) => {
@@ -112,11 +112,22 @@ const App: React.FC = () => {
           }
         });
 
+        // 4. Ouvir Desafios em Tempo Real
+        const challengesRef = collection(db, "challenges");
+        const unsubChallenges = onSnapshot(challengesRef, (snapshot) => {
+          const loadedChallenges: Challenge[] = [];
+          snapshot.forEach((doc) => {
+            loadedChallenges.push({ id: doc.id, ...doc.data() } as Challenge);
+          });
+          setChallenges(loadedChallenges);
+        });
+
 
         return () => {
           unsubUser();
           unsubActivities();
           unsubAppSettings();
+          unsubChallenges(); // Limpar o listener de desafios
         };
       } else {
         setUser(null);
@@ -125,6 +136,7 @@ const App: React.FC = () => {
         setCurrentScreen(AppScreen.INITIALIZE);
         setAvatarGallery([]);
         setWorkoutGallery([]);
+        setChallenges([]); // Limpar desafios ao deslogar
       }
     });
 
@@ -327,21 +339,20 @@ const App: React.FC = () => {
           time: postWorkoutData.time || "00:00",
           pace: postWorkoutData.pace || "0'00\"",
           calories: Math.floor((postWorkoutData.distance || 0) * 70),
-          heartRate: postWorkoutData.heartRate || 0, // Inclui a frequência cardíaca
+          heartRate: postWorkoutData.heartRate || 0,
           createdAt: serverTimestamp()
         };
         
-        // Remove activityImage duplicado se for a mesma coisa que mapImage para economizar espaço
         if (finalActivity.activityImage === finalActivity.mapImage) {
             delete finalActivity.activityImage;
         }
 
         const activitiesRef = collection(db, "users", auth.currentUser.uid, "activities");
         
-        if (postWorkoutData.id) { // Se a atividade já tem um ID, é uma atualização
+        if (postWorkoutData.id) {
           await setDoc(doc(activitiesRef, postWorkoutData.id), finalActivity, { merge: true });
           showSuccess("Atividade atualizada com sucesso!");
-        } else { // Caso contrário, é uma nova atividade
+        } else {
           await addDoc(activitiesRef, finalActivity);
           showSuccess("Atividade salva com sucesso!");
         }
@@ -376,7 +387,7 @@ const App: React.FC = () => {
 
     switch (currentScreen) {
       case AppScreen.DASHBOARD:
-        return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} aiInsight={aiInsight} aiLoading={aiLoading} />;
+        return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} aiInsight={aiInsight} aiLoading={aiLoading} challenges={challenges} />;
       case AppScreen.START_ACTIVITY:
         return <StartActivity onBack={() => navigate(AppScreen.DASHBOARD)} onStart={handleStartWorkout} />;
       case AppScreen.LIVE_ACTIVITY:
@@ -392,9 +403,9 @@ const App: React.FC = () => {
       case AppScreen.MUSIC:
         return <Music onBack={() => navigate(AppScreen.DASHBOARD)} />;
       case AppScreen.ADMIN_DASHBOARD:
-        return isAdmin ? <AdminDashboard navigate={navigate} avatarGallery={avatarGallery} workoutGallery={workoutGallery} onUpdateAnyUser={handleUpdateAnyUser} /> : <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} aiInsight={aiInsight} aiLoading={aiLoading} />;
+        return isAdmin ? <AdminDashboard navigate={navigate} avatarGallery={avatarGallery} workoutGallery={workoutGallery} onUpdateAnyUser={handleUpdateAnyUser} /> : <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} aiInsight={aiInsight} aiLoading={aiLoading} challenges={challenges} />;
       default:
-        return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} aiInsight={aiInsight} aiLoading={aiLoading} />;
+        return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} aiInsight={aiInsight} aiLoading={aiLoading} challenges={challenges} />;
     }
   };
 
