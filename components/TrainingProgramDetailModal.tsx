@@ -6,10 +6,11 @@ interface TrainingProgramDetailModalProps {
   onClose: () => void;
   onEnroll: (programId: string) => void;
   isEnrolled: boolean;
-  userCompletedProgramActivities?: { [programId: string]: string[] }; // Nova prop
+  userCompletedProgramActivities?: { [programId: string]: string[] };
+  onStartProgramActivity: (programId: string, activity: ProgramActivity) => void; // Nova prop
 }
 
-const TrainingProgramDetailModal: React.FC<TrainingProgramDetailModalProps> = ({ program, onClose, onEnroll, isEnrolled, userCompletedProgramActivities }) => {
+const TrainingProgramDetailModal: React.FC<TrainingProgramDetailModalProps> = ({ program, onClose, onEnroll, isEnrolled, userCompletedProgramActivities, onStartProgramActivity }) => {
   const levelColors = {
     'Iniciante': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/10',
     'Intermediário': 'bg-blue-500/20 text-blue-400 border-blue-500/10',
@@ -95,10 +96,18 @@ const TrainingProgramDetailModal: React.FC<TrainingProgramDetailModalProps> = ({
                     <div className={`size-10 rounded-xl flex items-center justify-center ${isActivityCompleted ? 'bg-emerald-500 text-white' : 'bg-primary/10 text-primary'}`}>
                       <span className="material-symbols-outlined text-xl">{isActivityCompleted ? 'check_circle' : 'directions_run'}</span>
                     </div>
-                    <div>
+                    <div className="flex-1 text-left">
                       <p className={`font-bold text-sm ${isActivityCompleted ? 'text-emerald-700 line-through' : 'text-text-dark'}`}>Dia {activity.day}: {activity.title}</p>
                       <p className={`text-xs ${isActivityCompleted ? 'text-emerald-600 line-through' : 'text-text-light'}`}>{activity.description}</p>
                     </div>
+                    {isEnrolled && !isActivityCompleted && (
+                      <button 
+                        onClick={() => onStartProgramActivity(program.id, activity)}
+                        className="shrink-0 px-3 py-1.5 rounded-xl bg-primary text-white text-[9px] font-black uppercase tracking-widest active:scale-95 transition-all"
+                      >
+                        Iniciar
+                      </button>
+                    )}
                   </div>
                 );
               })}

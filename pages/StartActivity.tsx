@@ -1,17 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { APP_LOGO } from '../constants';
+import { ProgramActivity } from '../types'; // Importar ProgramActivity
 
 interface StartActivityProps {
   onBack: () => void;
   onStart: (config: any) => void;
+  programActivityConfig?: { programId: string; activity: ProgramActivity } | null; // Nova prop
 }
 
-const StartActivity: React.FC<StartActivityProps> = ({ onBack, onStart }) => {
+const StartActivity: React.FC<StartActivityProps> = ({ onBack, onStart, programActivityConfig }) => {
   const [selectedType, setSelectedType] = useState('Corrida');
   const [targetDist, setTargetDist] = useState(5.0);
   const [targetTime, setTargetTime] = useState(30);
   const [terrain, setTerrain] = useState<'Asfalto' | 'Trilha' | 'Esteira'>('Asfalto');
   const [voiceCues, setVoiceCues] = useState(true);
+
+  // Efeito para pré-preencher os campos se houver uma configuração de atividade de programa
+  useEffect(() => {
+    if (programActivityConfig) {
+      const { activity } = programActivityConfig;
+      setSelectedType(activity.type);
+      if (activity.targetDistance) setTargetDist(activity.targetDistance);
+      if (activity.targetTime) setTargetTime(activity.targetTime);
+      // O terreno e voiceCues podem ser mantidos como padrão ou adicionados à ProgramActivity se necessário
+    }
+  }, [programActivityConfig]);
+
+  const handleStartClick = () => {
+    const config = { 
+      type: selectedType, 
+      targetDistance: targetDist, 
+      targetTime: targetTime, 
+      terrain, 
+      voiceCues 
+    };
+
+    if (programActivityConfig) {
+      onStart({
+        ...config,
+        programId: programActivityConfig.programId,
+        programActivityId: programActivityConfig.activity.id,
+        title: programActivityConfig.activity.title // Usar o título da atividade do programa
+      });
+    } else {
+      onStart(config);
+    }
+  };
 
   return (
     <div className="bg-background-light min-h-screen flex flex-col pb-44 overflow-y-auto no-scrollbar">
@@ -122,7 +156,7 @@ const StartActivity: React.FC<StartActivityProps> = ({ onBack, onStart }) => {
 
       <div className="fixed bottom-0 left-0 w-full p-8 bg-gradient-to-t from-background-light via-background-light/90 to-transparent z-40 pointer-events-none">
         <button 
-          onClick={() => onStart({ type: selectedType, targetDistance: targetDist, targetTime: targetTime, terrain, voiceCues })}
+          onClick={handleStartClick}
           className="pointer-events-auto w-full h-24 bg-primary rounded-[3rem] shadow-[0_25px_60px_rgba(233,84,32,0.6)] flex items-center justify-center gap-5 group active:scale-[0.96] transition-all hover:brightness-110"
         >
           <span className="text-white text-2xl font-black uppercase tracking-[0.2em] italic">Lançar Missão</span>

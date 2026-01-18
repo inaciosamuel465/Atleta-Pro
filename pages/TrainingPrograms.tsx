@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
-import { AppScreen, TrainingProgram } from '../types';
+import { AppScreen, TrainingProgram, ProgramActivity } from '../types';
 import TrainingProgramCard from '../components/TrainingProgramCard';
-import TrainingProgramDetailModal from '../components/TrainingProgramDetailModal'; // Será criado a seguir
+import TrainingProgramDetailModal from '../components/TrainingProgramDetailModal';
 
 interface TrainingProgramsProps {
   navigate: (screen: AppScreen) => void;
   trainingPrograms: TrainingProgram[];
   onEnrollInProgram: (programId: string) => void;
   userActiveProgramId?: string;
-  userCompletedProgramActivities?: { [programId: string]: string[] }; // Nova prop
+  userCompletedProgramActivities?: { [programId: string]: string[] };
+  onStartProgramActivity: (programId: string, activity: ProgramActivity) => void; // Nova prop
 }
 
-const TrainingPrograms: React.FC<TrainingProgramsProps> = ({ navigate, trainingPrograms, onEnrollInProgram, userActiveProgramId, userCompletedProgramActivities }) => {
+const TrainingPrograms: React.FC<TrainingProgramsProps> = ({ navigate, trainingPrograms, onEnrollInProgram, userActiveProgramId, userCompletedProgramActivities, onStartProgramActivity }) => {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<TrainingProgram | null>(null);
 
@@ -61,7 +62,8 @@ const TrainingPrograms: React.FC<TrainingProgramsProps> = ({ navigate, trainingP
           onClose={() => setShowDetailModal(false)}
           onEnroll={handleEnroll}
           isEnrolled={userActiveProgramId === selectedProgram.id}
-          userCompletedProgramActivities={userCompletedProgramActivities} // Passar atividades concluídas
+          userCompletedProgramActivities={userCompletedProgramActivities}
+          onStartProgramActivity={onStartProgramActivity} // Passando a nova prop
         />
       )}
     </div>

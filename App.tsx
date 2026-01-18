@@ -42,6 +42,7 @@ const App: React.FC = () => {
   const [trainingPrograms, setTrainingPrograms] = useState<TrainingProgram[]>([]); // Novo estado para programas de treino
   const [aiInsight, setAiInsight] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [programActivityToStart, setProgramActivityToStart] = useState<{ programId: string; activity: ProgramActivity } | null>(null); // Novo estado
 
   const isAdmin = user?.email === 'admin@atleta.com';
 
@@ -421,6 +422,20 @@ const App: React.FC = () => {
     navigate(AppScreen.LIVE_ACTIVITY);
   };
 
+  // Nova função para iniciar uma atividade de programa diretamente do modal
+  const handleStartProgramActivityFromModal = useCallback((programId: string, activity: ProgramActivity) => {
+    setProgramActivityToStart({ programId, activity });
+    navigate(AppScreen.START_ACTIVITY);
+  }, [navigate]);
+
+  // Efeito para limpar programActivityToStart após iniciar o treino
+  useEffect(() => {
+    if (currentScreen !== AppScreen.START_ACTIVITY && programActivityToStart) {
+      setProgramActivityToStart(null);
+    }
+  }, [currentScreen, programActivityToStart]);
+
+
   const handleSaveWorkout = async (postWorkoutData: Partial<Activity>) => {
     if (postWorkoutData && user && auth.currentUser) {
       try {
@@ -575,7 +590,11 @@ const App: React.FC = () => {
       case AppScreen.DASHBOARD:
         return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} aiInsight={aiInsight} aiLoading={aiLoading} challenges={challenges} />;
       case AppScreen.START_ACTIVITY:
-        return <StartActivity onBack={() => navigate(AppScreen.DASHBOARD)} onStart={handleStartWorkout} />;
+        return <StartActivity 
+          onBack={() => navigate(AppScreen.DASHBOARD)} 
+          onStart={handleStartWorkout} 
+          programActivityConfig={programActivityToStart} // Passar a config da atividade do programa
+        />;
       case AppScreen.LIVE_ACTIVITY:
         return <LiveActivity onFinish={(data) => { setActiveWorkout(prev => ({ ...prev, ...data })); navigate(AppScreen.POST_WORKOUT); }} workoutConfig={activeWorkout!} user={user} />;
       case AppScreen.POST_WORKOUT:
@@ -611,7 +630,8 @@ const App: React.FC = () => {
           trainingPrograms={trainingPrograms} 
           onEnrollInProgram={handleEnrollInProgram}
           userActiveProgramId={user.activeTrainingProgramId}
-          userCompletedProgramActivities={user.completedProgramActivities} // Passar atividades concluídas
+          userCompletedProgramActivities={user.completedProgramActivities}
+          onStartProgramActivity={handleStartProgramActivityFromModal} // Passar a nova função
         />;
       default:
         return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} aiInsight={aiInsight} aiLoading={aiLoading} challenges={challenges} />;
