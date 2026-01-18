@@ -8,9 +8,10 @@ interface TrainingProgramsProps {
   trainingPrograms: TrainingProgram[];
   onEnrollInProgram: (programId: string) => void;
   userActiveProgramId?: string;
+  userCompletedProgramActivities?: { [programId: string]: string[] }; // Nova prop
 }
 
-const TrainingPrograms: React.FC<TrainingProgramsProps> = ({ navigate, trainingPrograms, onEnrollInProgram, userActiveProgramId }) => {
+const TrainingPrograms: React.FC<TrainingProgramsProps> = ({ navigate, trainingPrograms, onEnrollInProgram, userActiveProgramId, userCompletedProgramActivities }) => {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<TrainingProgram | null>(null);
 
@@ -60,6 +61,7 @@ const TrainingPrograms: React.FC<TrainingProgramsProps> = ({ navigate, trainingP
           onClose={() => setShowDetailModal(false)}
           onEnroll={handleEnroll}
           isEnrolled={userActiveProgramId === selectedProgram.id}
+          userCompletedProgramActivities={userCompletedProgramActivities} // Passar atividades concluídas
         />
       )}
     </div>

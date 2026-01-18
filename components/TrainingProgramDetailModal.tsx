@@ -6,9 +6,10 @@ interface TrainingProgramDetailModalProps {
   onClose: () => void;
   onEnroll: (programId: string) => void;
   isEnrolled: boolean;
+  userCompletedProgramActivities?: { [programId: string]: string[] }; // Nova prop
 }
 
-const TrainingProgramDetailModal: React.FC<TrainingProgramDetailModalProps> = ({ program, onClose, onEnroll, isEnrolled }) => {
+const TrainingProgramDetailModal: React.FC<TrainingProgramDetailModalProps> = ({ program, onClose, onEnroll, isEnrolled, userCompletedProgramActivities }) => {
   const levelColors = {
     'Iniciante': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/10',
     'Intermediário': 'bg-blue-500/20 text-blue-400 border-blue-500/10',
@@ -20,6 +21,11 @@ const TrainingProgramDetailModal: React.FC<TrainingProgramDetailModalProps> = ({
     'Velocidade': 'speed',
     'Força': 'sports_gymnastics',
   };
+
+  const completedActivitiesForProgram = userCompletedProgramActivities?.[program.id] || [];
+  const completedCount = completedActivitiesForProgram.length;
+  const totalActivities = program.activities.length;
+  const progressPercent = totalActivities > 0 ? (completedCount / totalActivities) * 100 : 0;
 
   return (
     <div className="fixed inset-0 z-[150] flex items-end justify-center px-4 pb-10 bg-background-light/90 backdrop-blur-xl animate-in fade-in duration-300">
@@ -63,20 +69,39 @@ const TrainingProgramDetailModal: React.FC<TrainingProgramDetailModalProps> = ({
             </div>
           </div>
 
+          {isEnrolled && (
+            <div className="w-full space-y-2 pt-4 border-t border-surface-medium">
+              <p className="text-text-light text-[10px] font-black uppercase tracking-widest">Progresso do Programa</p>
+              <div className="w-full h-3 bg-surface-medium rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-primary transition-all duration-1000" 
+                  style={{ width: `${progressPercent}%` }}
+                ></div>
+              </div>
+              <p className="text-text-dark text-lg font-black italic">{completedCount} de {totalActivities} Atividades Concluídas</p>
+            </div>
+          )}
+
           <div className="w-full space-y-4 pt-6 border-t border-surface-medium">
             <h4 className="text-text-dark text-xl font-black italic uppercase tracking-tighter text-left">Atividades do Programa</h4>
             <div className="space-y-3 max-h-60 overflow-y-auto no-scrollbar pr-2">
-              {program.activities.map((activity: ProgramActivity) => (
-                <div key={activity.id} className="flex items-center gap-4 bg-surface-medium/40 p-4 rounded-2xl border border-surface-medium">
-                  <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                    <span className="material-symbols-outlined text-xl">directions_run</span>
+              {program.activities.map((activity: ProgramActivity) => {
+                const isActivityCompleted = completedActivitiesForProgram.includes(activity.id);
+                return (
+                  <div 
+                    key={activity.id} 
+                    className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${isActivityCompleted ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-surface-medium/40 border-surface-medium'}`}
+                  >
+                    <div className={`size-10 rounded-xl flex items-center justify-center ${isActivityCompleted ? 'bg-emerald-500 text-white' : 'bg-primary/10 text-primary'}`}>
+                      <span className="material-symbols-outlined text-xl">{isActivityCompleted ? 'check_circle' : 'directions_run'}</span>
+                    </div>
+                    <div>
+                      <p className={`font-bold text-sm ${isActivityCompleted ? 'text-emerald-700 line-through' : 'text-text-dark'}`}>Dia {activity.day}: {activity.title}</p>
+                      <p className={`text-xs ${isActivityCompleted ? 'text-emerald-600 line-through' : 'text-text-light'}`}>{activity.description}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-text-dark font-bold text-sm">Dia {activity.day}: {activity.title}</p>
-                    <p className="text-text-light text-xs">{activity.description}</p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

@@ -611,6 +611,7 @@ const App: React.FC = () => {
           trainingPrograms={trainingPrograms} 
           onEnrollInProgram={handleEnrollInProgram}
           userActiveProgramId={user.activeTrainingProgramId}
+          userCompletedProgramActivities={user.completedProgramActivities} // Passar atividades concluídas
         />;
       default:
         return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} aiInsight={aiInsight} aiLoading={aiLoading} challenges={challenges} />;
