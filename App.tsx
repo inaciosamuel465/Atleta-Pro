@@ -433,7 +433,7 @@ const App: React.FC = () => {
         const finalActivity: any = {
           ...postWorkoutData,
           uid: auth.currentUser.uid,
-          mapImage: postWorkoutData.mapImage || "https://lh3.googleusercontent.com/aida-public/AB6AXuCRsdjqI5337F-1_1RzFDvJfX-LCu3jc9gtqXcC1oxi-2nWene8ffUrJeExV5MVzFt17owpCRtgA5IVHald8BHSj9kC7z77Y3jezCH60efr9JyQY3KzXVQzNnI8A7b5910o7fcnwbw8YltTc87nRC0U7U30il8E",
+          mapImage: postWorkoutData.mapImage || "https://lh3.googleusercontent.com/aida-public/AB6AXuCRsdjqI5337F-1_1RzFDvJfX-LCu3jc9gtrXcC1oxi-2nWene8ffUrJeExV5MVzFt17owpCRtgA5IVHald8BHSj9kC7z77Y3jezCH60efr9JyQY3KzXVQzNnI8A7b5910o7fcnwbw8YltTc87nRC0U7U30il8E",
           activityImage: finalActivityImage, // Usar a URL do Storage ou a original
           type: activeWorkout?.type || 'Corrida',
           title: activeWorkout?.title || 'Treino',
@@ -553,10 +553,10 @@ const App: React.FC = () => {
   };
 
   if (authLoading) {
-      return <div className="h-screen w-full bg-background-dark flex items-center justify-center">
+      return <div className="h-screen w-full bg-background-light flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
               <span className="material-symbols-outlined text-primary text-5xl animate-spin">sync</span>
-              <p className="text-white font-black uppercase tracking-[0.3em] text-xs">Sincronizando Nuvem...</p>
+              <p className="text-text-dark font-black uppercase tracking-[0.3em] text-xs">Sincronizando Nuvem...</p>
           </div>
       </div>;
   }
@@ -617,10 +617,10 @@ const App: React.FC = () => {
     }
   };
 
-  const showBottomNav = [AppScreen.DASHBOARD, AppScreen.HISTORY, AppScreen.PROFILE, AppScreen.STATS].includes(currentScreen);
+  const showBottomNav = [AppScreen.DASHBOARD, AppScreen.HISTORY, AppScreen.PROFILE, AppScreen.STATS, AppScreen.TRAINING_PROGRAMS].includes(currentScreen);
 
   return (
-    <div className="relative h-[100dvh] w-full max-w-md mx-auto bg-background-dark shadow-2xl flex flex-col overflow-hidden selection:bg-primary/30">
+    <div className="relative h-[100dvh] w-full max-w-md mx-auto bg-background-light shadow-2xl flex flex-col overflow-hidden selection:bg-primary/30">
       <div className="flex-1 overflow-y-auto no-scrollbar">
         {renderScreen()}
       </div>
