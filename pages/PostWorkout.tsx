@@ -389,17 +389,17 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, o
       <header className="sticky top-0 left-0 w-full z-50 bg-background-light/80 backdrop-blur-2xl border-b border-surface-medium">
         <div className="flex items-center justify-between px-6 py-5 max-w-md mx-auto">
           <button onClick={isHistorical && onClose ? onClose : onDiscard} className="size-11 flex items-center justify-center rounded-2xl bg-surface-light border border-surface-medium active:scale-90 transition-all hover:bg-surface-medium">
-            <span className="material-symbols-outlined text-text-dark text-2xl">{isHistorical ? 'arrow_back' : 'close'}</span>
+            <span className="material-symbols-outlined text-text-dark text-2xl">close</span>
           </button>
           <div className="text-center">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary italic font-display">Share Card</h2>
-            <p className="text-[8px] font-bold text-text-light uppercase font-display tracking-widest mt-0.5">Edit Mode</p>
+            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary italic font-display">CRIAR IMAGEM</h2>
+            <p className="text-[8px] font-bold text-text-light uppercase font-display tracking-widest mt-0.5">EDIT MODE</p>
           </div>
           <button 
             onClick={handleInitialSave} 
-            className={`size-11 rounded-2xl flex items-center justify-center shadow-lg transition-all active:scale-90 bg-surface-light border border-surface-medium hover:brightness-110`}
+            className={`size-11 rounded-2xl flex items-center justify-center shadow-lg transition-all active:scale-90 bg-primary text-white hover:brightness-110`}
           >
-            <span className="material-symbols-outlined text-xl text-primary">ios_share</span>
+            <span className="material-symbols-outlined text-xl">ios_share</span>
           </button>
         </div>
       </header>
@@ -442,14 +442,14 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, o
               <div className="grid grid-cols-2 gap-4">
                 <button 
                   onClick={() => setAspectRatio('9:16')}
-                  className={`h-14 rounded-2xl flex items-center justify-center gap-2 border text-[10px] font-black uppercase tracking-widest transition-all ${aspectRatio === '9:16' ? 'bg-primary border-primary text-white shadow-xl shadow-primary/20' : 'bg-surface-light border-surface-medium text-text-light hover:bg-surface-medium'}`}
+                  className={`h-14 rounded-[2rem] flex items-center justify-center gap-2 border text-[10px] font-black uppercase tracking-widest transition-all ${aspectRatio === '9:16' ? 'bg-primary border-primary text-white shadow-xl shadow-primary/20' : 'bg-surface-light border-surface-medium text-text-light hover:bg-surface-medium'}`}
                 >
                   <span className="material-symbols-outlined text-lg">crop_portrait</span>
                   Story
                 </button>
                 <button 
                   onClick={() => setAspectRatio('16:9')}
-                  className={`h-14 rounded-2xl flex items-center justify-center gap-2 border text-[10px] font-black uppercase tracking-widest transition-all ${aspectRatio === '16:9' ? 'bg-primary border-primary text-white shadow-xl shadow-primary/20' : 'bg-surface-light border-surface-medium text-text-light hover:bg-surface-medium'}`}
+                  className={`h-14 rounded-[2rem] flex items-center justify-center gap-2 border text-[10px] font-black uppercase tracking-widest transition-all ${aspectRatio === '16:9' ? 'bg-primary border-primary text-white shadow-xl shadow-primary/20' : 'bg-surface-light border-surface-medium text-text-light hover:bg-surface-medium'}`}
                 >
                   <span className="material-symbols-outlined text-lg">crop_landscape</span>
                   Feed
@@ -464,7 +464,7 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, o
                   <button 
                     key={t}
                     onClick={() => setTemplate(t)}
-                    className={`h-14 rounded-2xl border flex flex-col items-center justify-center text-[9px] font-black uppercase tracking-widest transition-all ${template === t ? 'bg-primary text-white border-primary shadow-lg scale-105 z-10' : 'bg-surface-light border-surface-medium text-text-light hover:bg-surface-medium'}`}
+                    className={`h-14 rounded-[2rem] border flex flex-col items-center justify-center text-[9px] font-black uppercase tracking-widest transition-all ${template === t ? 'bg-primary text-white border-primary shadow-lg scale-105 z-10' : 'bg-surface-light border-surface-medium text-text-light hover:bg-surface-medium'}`}
                   >
                     <span>{t}</span>
                   </button>
@@ -526,7 +526,7 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, o
                 <div className="grid grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto no-scrollbar pr-1">
                     <button 
                       onClick={() => { setCustomPhoto(null); setShowPhotoPicker(false); }}
-                      className="h-28 rounded-3xl bg-surface-medium border-2 border-primary/50 flex flex-col items-center justify-center gap-2 text-text-dark relative overflow-hidden"
+                      className="h-28 rounded-[2rem] bg-surface-medium border-2 border-primary/50 flex flex-col items-center justify-center gap-2 text-text-dark relative overflow-hidden"
                     >
                        <div className="absolute inset-0 bg-surface-medium"></div>
                        <span className="material-symbols-outlined relative z-10 text-3xl">map</span>
@@ -534,13 +534,13 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, o
                     </button>
                     <button 
                         onClick={() => fileInputRef.current?.click()}
-                        className="h-28 rounded-3xl bg-surface-medium/50 border-2 border-dashed border-surface-medium flex flex-col items-center justify-center text-text-light gap-2 hover:bg-surface-medium"
+                        className="h-28 rounded-[2rem] bg-surface-medium/50 border-2 border-dashed border-surface-medium flex flex-col items-center justify-center text-text-light gap-2 hover:bg-surface-medium"
                     >
                         <span className="material-symbols-outlined text-3xl">add_photo_alternate</span>
                         <span className="text-[8px] font-black uppercase">Galeria</span>
                     </button>
                     {workoutGallery.map((url, i) => (
-                        <button key={i} onClick={() => { setCustomPhoto(url); setShowPhotoPicker(false); }} className="h-28 rounded-3xl overflow-hidden hover:scale-95 transition-transform">
+                        <button key={i} onClick={() => { setCustomPhoto(url); setShowPhotoPicker(false); }} className="h-28 rounded-[2rem] overflow-hidden hover:scale-95 transition-transform">
                             <img src={url} className="size-full object-cover" crossOrigin="anonymous" />
                         </button>
                     ))}
@@ -565,7 +565,7 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, o
                         <button 
                             onClick={handleInstagram}
                             disabled={isCapturing}
-                            className="w-full h-16 rounded-2xl bg-gradient-to-r from-[#833ab4] via-[#fd1d1d] to-[#fcb045] flex items-center justify-center gap-3 shadow-lg active:scale-[0.98] transition-all"
+                            className="w-full h-16 rounded-[2rem] bg-gradient-to-r from-[#833ab4] via-[#fd1d1d] to-[#fcb045] flex items-center justify-center gap-3 shadow-lg active:scale-[0.98] transition-all"
                         >
                             <span className="material-symbols-outlined text-white text-2xl">camera_alt</span>
                             <span className="text-white text-xs font-black uppercase tracking-widest">Instagram Story</span>
@@ -575,7 +575,7 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, o
                             <button 
                                 onClick={handleDownload}
                                 disabled={isCapturing}
-                                className="h-16 rounded-2xl bg-surface-light border border-surface-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-all hover:bg-surface-medium"
+                                className="h-16 rounded-[2rem] bg-surface-light border border-surface-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-all hover:bg-surface-medium"
                             >
                                 <span className="material-symbols-outlined text-text-dark text-xl">download</span>
                                 <span className="text-text-dark text-[10px] font-black uppercase tracking-widest">Baixar</span>
@@ -584,7 +584,7 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, o
                             <button 
                                 onClick={handleShareNative}
                                 disabled={isCapturing}
-                                className="h-16 rounded-2xl bg-surface-light border border-surface-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-all hover:bg-surface-medium"
+                                className="h-16 rounded-[2rem] bg-surface-light border border-surface-medium flex items-center justify-center gap-2 active:scale-[0.98] transition-all hover:bg-surface-medium"
                             >
                                 <span className="material-symbols-outlined text-text-dark text-xl">share</span>
                                 <span className="text-text-dark text-[10px] font-black uppercase tracking-widest">Outros</span>
@@ -594,7 +594,7 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, o
 
                     <button 
                         onClick={() => setShowShareModal(false)}
-                        className="w-full py-4 rounded-2xl text-text-light text-[10px] font-black uppercase tracking-widest hover:text-text-dark transition-colors"
+                        className="w-full py-4 rounded-[2rem] text-text-light text-[10px] font-black uppercase tracking-widest hover:text-text-dark transition-colors"
                     >
                         Voltar
                     </button>
