@@ -12,6 +12,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentScreen, onNavigate }) => {
     { screen: AppScreen.HISTORY, icon: 'history', label: 'Atividade' },
     { screen: AppScreen.START_ACTIVITY, icon: 'add', label: 'Iniciar', isFab: true }, // FAB central
     { screen: AppScreen.TRAINING_PROGRAMS, icon: 'fitness_center', label: 'Progrm' },
+    { screen: AppScreen.STATS, icon: 'analytics', label: 'Stats' }, // Adicionado: Tela de Estatísticas
     { screen: AppScreen.PROFILE, icon: 'account_circle', label: 'Perfil' },
   ];
 
