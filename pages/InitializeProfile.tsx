@@ -82,7 +82,7 @@ const InitializeProfile: React.FC<InitializeProfileProps> = ({ onComplete, onSee
   };
 
   return (
-    <div className="flex flex-col h-full min-h-screen bg-[#101922] pb-20 overflow-y-auto no-scrollbar animate-in fade-in duration-500">
+    <div className="flex flex-col h-full min-h-screen bg-background-light pb-20 overflow-y-auto no-scrollbar animate-in fade-in duration-500">
       <div className="flex flex-col items-center pt-24 px-6">
         
         {/* LOGO AREA */}
@@ -90,24 +90,24 @@ const InitializeProfile: React.FC<InitializeProfileProps> = ({ onComplete, onSee
            <div className="absolute inset-0 bg-primary/20 blur-[50px] rounded-full group-hover:bg-primary/30 transition-all duration-700"></div>
            <img 
               src={APP_LOGO} 
-              className="w-48 h-48 object-contain relative z-10 drop-shadow-[0_0_30px_rgba(37,140,244,0.8)] animate-float" 
+              className="w-48 h-48 object-contain relative z-10 drop-shadow-[0_0_30px_rgba(233,84,32,0.8)] animate-float" 
               alt="Atleta Pro Logo" 
            />
         </div>
 
-        <h1 className="text-white text-5xl font-black tracking-tighter mb-2 italic">Atleta Pro</h1>
-        <p className="text-slate-500 text-[10px] font-black tracking-[0.4em] uppercase mb-12">Elite Performance System</p>
+        <h1 className="text-text-dark text-5xl font-black tracking-tighter mb-2 italic">Atleta Pro</h1>
+        <p className="text-text-light text-[10px] font-black tracking-[0.4em] uppercase mb-12">Elite Performance System</p>
         
-        <div className="w-full flex bg-surface-dark/50 p-1 rounded-2xl border border-white/5 mb-8">
+        <div className="w-full flex bg-surface-light p-1 rounded-2xl border border-surface-medium mb-8">
           <button 
             onClick={() => setMode('login')}
-            className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${mode === 'login' ? 'bg-primary text-white shadow-lg' : 'text-slate-500'}`}
+            className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${mode === 'login' ? 'bg-primary text-white shadow-lg' : 'text-text-medium'}`}
           >
             Login Cloud
           </button>
           <button 
             onClick={() => setMode('register')}
-            className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${mode === 'register' ? 'bg-primary text-white shadow-lg' : 'text-slate-500'}`}
+            className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${mode === 'register' ? 'bg-primary text-white shadow-lg' : 'text-text-medium'}`}
           >
             Novo Atleta
           </button>
@@ -119,21 +119,21 @@ const InitializeProfile: React.FC<InitializeProfileProps> = ({ onComplete, onSee
           <div className="space-y-4">
             {mode === 'register' && (
               <input 
-                className="w-full h-14 bg-surface-dark/40 border border-slate-800 rounded-2xl px-5 text-white outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold" 
+                className="w-full h-14 bg-surface-light border border-surface-medium rounded-2xl px-5 text-text-dark outline-none focus:border-primary transition-all placeholder:text-text-light font-bold" 
                 placeholder="Nome do Atleta" 
                 value={name} 
                 onChange={e => setName(e.target.value)} 
               />
             )}
             <input 
-              className="w-full h-14 bg-surface-dark/40 border border-slate-800 rounded-2xl px-5 text-white outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold" 
+              className="w-full h-14 bg-surface-light border border-surface-medium rounded-2xl px-5 text-text-dark outline-none focus:border-primary transition-all placeholder:text-text-light font-bold" 
               placeholder="E-mail" 
               type="email"
               value={email} 
               onChange={e => setEmail(e.target.value)} 
             />
             <input 
-              className="w-full h-14 bg-surface-dark/40 border border-slate-800 rounded-2xl px-5 text-white outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold" 
+              className="w-full h-14 bg-surface-light border border-surface-medium rounded-2xl px-5 text-text-dark outline-none focus:border-primary transition-all placeholder:text-text-light font-bold" 
               type="password" 
               placeholder="Senha" 
               value={password} 

@@ -134,30 +134,30 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate, avatarGallery
   };
 
   return (
-    <div className="bg-[#101922] min-h-screen pb-40 no-scrollbar overflow-y-auto">
-      <header className="flex items-center px-6 pt-10 pb-6 justify-between border-b border-white/5 sticky top-0 bg-[#101922]/90 backdrop-blur-xl z-20">
-        <button onClick={() => navigate(AppScreen.DASHBOARD)} className="size-11 flex items-center justify-center rounded-2xl bg-surface-dark border border-white/5 hover:bg-white/10 transition-colors">
-          <span className="material-symbols-outlined text-white">arrow_back</span>
+    <div className="bg-background-light min-h-screen pb-40 no-scrollbar overflow-y-auto">
+      <header className="flex items-center px-6 pt-10 pb-6 justify-between border-b border-surface-medium sticky top-0 bg-background-light/90 backdrop-blur-xl z-20">
+        <button onClick={() => navigate(AppScreen.DASHBOARD)} className="size-11 flex items-center justify-center rounded-2xl bg-surface-light border border-surface-medium hover:bg-surface-medium transition-colors">
+          <span className="material-symbols-outlined text-text-dark">arrow_back</span>
         </button>
-        <h2 className="text-white text-3xl font-black tracking-tight italic uppercase">Admin Portal</h2>
+        <h2 className="text-text-dark text-3xl font-black tracking-tight italic uppercase">Admin Portal</h2>
         <div className="size-11"></div> {/* Placeholder for alignment */}
       </header>
 
       <main className="px-6 pt-8 space-y-10">
         {/* Gerenciamento de Usuários */}
-        <section className="space-y-6 bg-surface-dark rounded-[2.5rem] p-8 border border-white/5">
-          <h3 className="text-white text-xl font-black tracking-tight italic uppercase">Gerenciar Usuários</h3>
+        <section className="space-y-6 bg-surface-light rounded-[2.5rem] p-8 border border-surface-medium">
+          <h3 className="text-text-dark text-xl font-black tracking-tight italic uppercase">Gerenciar Usuários</h3>
           <div className="space-y-4 max-h-80 overflow-y-auto no-scrollbar pr-1">
             {allUsers.length > 0 ? allUsers.map((user) => (
               <div 
                 key={user.uid} 
-                className="flex items-center justify-between bg-black/40 p-4 rounded-2xl border border-white/5 hover:bg-white/5 transition-colors"
+                className="flex items-center justify-between bg-surface-medium/40 p-4 rounded-2xl border border-surface-medium hover:bg-surface-medium transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <img src={user.avatar} className="size-10 rounded-full object-cover" alt="User Avatar" />
                   <div>
-                    <p className="text-white font-bold text-sm">{user.name}</p>
-                    <p className="text-slate-500 text-xs">{user.email}</p>
+                    <p className="text-text-dark font-bold text-sm">{user.name}</p>
+                    <p className="text-text-light text-xs">{user.email}</p>
                   </div>
                 </div>
                 <button 
@@ -168,49 +168,49 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate, avatarGallery
                 </button>
               </div>
             )) : (
-              <p className="text-slate-500 text-center text-sm">Nenhum usuário encontrado.</p>
+              <p className="text-text-light text-center text-sm">Nenhum usuário encontrado.</p>
             )}
           </div>
         </section>
 
         {/* Gerenciamento de Desafios */}
-        <section className="space-y-6 bg-surface-dark rounded-[2.5rem] p-8 border border-white/5">
-          <h3 className="text-white text-xl font-black tracking-tight italic uppercase">Gerenciar Desafios</h3>
+        <section className="space-y-6 bg-surface-light rounded-[2.5rem] p-8 border border-surface-medium">
+          <h3 className="text-text-dark text-xl font-black tracking-tight italic uppercase">Gerenciar Desafios</h3>
           
           {/* Formulário para Adicionar Novo Desafio */}
-          <div className="space-y-4 mb-6 p-6 bg-black/40 rounded-2xl border border-white/5">
-            <h4 className="text-white text-lg font-black italic tracking-tighter uppercase mb-4">Novo Desafio</h4>
+          <div className="space-y-4 mb-6 p-6 bg-surface-medium/40 rounded-2xl border border-surface-medium">
+            <h4 className="text-text-dark text-lg font-black italic tracking-tighter uppercase mb-4">Novo Desafio</h4>
             <input 
               type="text"
               placeholder="Título do Desafio"
-              className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white text-sm outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold"
+              className="w-full h-12 bg-surface-medium/40 border border-surface-medium rounded-xl px-4 text-text-dark text-sm outline-none focus:border-primary transition-all placeholder:text-text-light font-bold"
               value={newChallengeTitle}
               onChange={(e) => setNewChallengeTitle(e.target.value)}
             />
             <textarea 
               placeholder="Descrição do Desafio"
-              className="w-full h-24 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold resize-none"
+              className="w-full h-24 bg-surface-medium/40 border border-surface-medium rounded-xl px-4 py-3 text-text-dark text-sm outline-none focus:border-primary transition-all placeholder:text-text-light font-bold resize-none"
               value={newChallengeDescription}
               onChange={(e) => setNewChallengeDescription(e.target.value)}
             />
             <input 
               type="text"
               placeholder="Ícone (Material Symbols, ex: directions_run)"
-              className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white text-sm outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold"
+              className="w-full h-12 bg-surface-medium/40 border border-surface-medium rounded-xl px-4 text-text-dark text-sm outline-none focus:border-primary transition-all placeholder:text-text-light font-bold"
               value={newChallengeIcon}
               onChange={(e) => setNewChallengeIcon(e.target.value)}
             />
             <input 
               type="text"
               placeholder="Cor (Tailwind, ex: blue-500)"
-              className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white text-sm outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold"
+              className="w-full h-12 bg-surface-medium/40 border border-surface-medium rounded-xl px-4 text-text-dark text-sm outline-none focus:border-primary transition-all placeholder:text-text-light font-bold"
               value={newChallengeColor}
               onChange={(e) => setNewChallengeColor(e.target.value)}
             />
             <input 
               type="text"
               placeholder="Progresso Inicial (Ex: 0% Concluído)"
-              className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white text-sm outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold"
+              className="w-full h-12 bg-surface-medium/40 border border-surface-medium rounded-xl px-4 text-text-dark text-sm outline-none focus:border-primary transition-all placeholder:text-text-light font-bold"
               value={newChallengeProgress}
               onChange={(e) => setNewChallengeProgress(e.target.value)}
             />
@@ -227,15 +227,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate, avatarGallery
             {challenges.length > 0 ? challenges.map((challenge) => (
               <div 
                 key={challenge.id} 
-                className="flex items-center justify-between bg-black/40 p-4 rounded-2xl border border-white/5 hover:bg-white/5 transition-colors"
+                className="flex items-center justify-between bg-surface-medium/40 p-4 rounded-2xl border border-surface-medium hover:bg-surface-medium transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <div className={`size-10 rounded-xl flex items-center justify-center bg-${challenge.color}/20 text-${challenge.color.split('-')[0]}-${challenge.color.split('-')[1]}`}>
                     <span className="material-symbols-outlined text-xl">{challenge.icon}</span>
                   </div>
                   <div>
-                    <p className="text-white font-bold text-sm">{challenge.title}</p>
-                    <p className="text-slate-500 text-xs">{challenge.progress}</p>
+                    <p className="text-text-dark font-bold text-sm">{challenge.title}</p>
+                    <p className="text-text-light text-xs">{challenge.progress}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -254,21 +254,21 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate, avatarGallery
                 </div>
               </div>
             )) : (
-              <p className="text-slate-500 text-center text-sm">Nenhum desafio encontrado.</p>
+              <p className="text-text-light text-center text-sm">Nenhum desafio encontrado.</p>
             )}
           </div>
         </section>
 
         {/* Gerenciamento de Galeria de Avatares */}
-        <section className="space-y-6 bg-surface-dark rounded-[2.5rem] p-8 border border-white/5">
-          <h3 className="text-white text-xl font-black tracking-tight italic uppercase">Avatares</h3>
+        <section className="space-y-6 bg-surface-light rounded-[2.5rem] p-8 border border-surface-medium">
+          <h3 className="text-text-dark text-xl font-black tracking-tight italic uppercase">Avatares</h3>
           <div className="relative mb-4">
             <input
               type="text"
               placeholder="Nova URL de Avatar"
               value={newAvatarUrl}
               onChange={(e) => setNewAvatarUrl(e.target.value)}
-              className="w-full h-14 bg-black/40 border border-white/10 rounded-2xl pl-5 pr-16 text-white text-sm outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold"
+              className="w-full h-14 bg-surface-medium/40 border border-surface-medium rounded-2xl pl-5 pr-16 text-text-dark text-sm outline-none focus:border-primary transition-all placeholder:text-text-light font-bold"
             />
             <button
               onClick={handleAddAvatarUrl}
@@ -280,7 +280,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate, avatarGallery
           <div className="grid grid-cols-4 gap-3 max-h-60 overflow-y-auto no-scrollbar pr-1">
             {avatarGallery.map((url, i) => (
               <div key={i} className="relative group">
-                <img src={url} className="size-16 rounded-2xl object-cover border border-white/10" alt={`Avatar ${i}`} />
+                <img src={url} className="size-16 rounded-2xl object-cover border border-surface-medium" alt={`Avatar ${i}`} />
                 <button
                   onClick={() => handleRemoveAvatarUrl(url)}
                   className="absolute -top-2 -right-2 size-6 rounded-full bg-red-500 flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity"
@@ -290,21 +290,21 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate, avatarGallery
               </div>
             ))}
           </div>
-          <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest text-center mt-4">
+          <p className="text-text-light text-[9px] font-black uppercase tracking-widest text-center mt-4">
             As alterações nas galerias são salvas automaticamente.
           </p>
         </section>
 
         {/* Gerenciamento de Galeria de Atividades */}
-        <section className="space-y-6 bg-surface-dark rounded-[2.5rem] p-8 border border-white/5">
-          <h3 className="text-white text-xl font-black tracking-tight italic uppercase">Imagens de Atividade</h3>
+        <section className="space-y-6 bg-surface-light rounded-[2.5rem] p-8 border border-surface-medium">
+          <h3 className="text-text-dark text-xl font-black tracking-tight italic uppercase">Imagens de Atividade</h3>
           <div className="relative mb-4">
             <input
               type="text"
               placeholder="Nova URL de Imagem de Atividade"
               value={newWorkoutUrl}
               onChange={(e) => setNewWorkoutUrl(e.target.value)}
-              className="w-full h-14 bg-black/40 border border-white/10 rounded-2xl pl-5 pr-16 text-white text-sm outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold"
+              className="w-full h-14 bg-surface-medium/40 border border-surface-medium rounded-2xl pl-5 pr-16 text-text-dark text-sm outline-none focus:border-primary transition-all placeholder:text-text-light font-bold"
             />
             <button
               onClick={handleAddWorkoutUrl}
@@ -316,7 +316,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate, avatarGallery
           <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto no-scrollbar pr-1">
             {workoutGallery.map((url, i) => (
               <div key={i} className="relative group">
-                <img src={url} className="h-28 w-full rounded-2xl object-cover border border-white/10" alt={`Workout ${i}`} />
+                <img src={url} className="h-28 w-full rounded-2xl object-cover border border-surface-medium" alt={`Workout ${i}`} />
                 <button
                   onClick={() => handleRemoveWorkoutUrl(url)}
                   className="absolute -top-2 -right-2 size-6 rounded-full bg-red-500 flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity"
@@ -326,7 +326,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate, avatarGallery
               </div>
             ))}
           </div>
-          <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest text-center mt-4">
+          <p className="text-text-light text-[9px] font-black uppercase tracking-widest text-center mt-4">
             As alterações nas galerias são salvas automaticamente.
           </p>
         </section>

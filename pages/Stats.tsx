@@ -142,7 +142,7 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
   }, [totalTimeSeconds]);
 
   const typeDistribution = useMemo(() => [
-    { name: 'Corrida', value: activities.filter(a => a.type === 'Corrida').length, color: '#258cf4' },
+    { name: 'Corrida', value: activities.filter(a => a.type === 'Corrida').length, color: '#E95420' }, // Primary
     { name: 'Ciclismo', value: activities.filter(a => a.type === 'Ciclismo').length, color: '#a855f7' },
     { name: 'Caminhada', value: activities.filter(a => a.type === 'Caminhada').length, color: '#10b981' },
     { name: 'Intervalo', value: activities.filter(a => a.type === 'Intervalado').length, color: '#f59e0b' },
@@ -213,7 +213,7 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
     // Definição das zonas de FC (percentual da FC Máxima)
     const zones = [
       { name: 'Zona 1 (50-60%)', min: 0.50, max: 0.60, color: '#10b981' }, // Verde (Recuperação)
-      { name: 'Zona 2 (60-70%)', min: 0.60, max: 0.70, color: '#258cf4' }, // Azul (Aeróbica Leve)
+      { name: 'Zona 2 (60-70%)', min: 0.60, max: 0.70, color: '#E95420' }, // Primary (Aeróbica Leve)
       { name: 'Zona 3 (70-80%)', min: 0.70, max: 0.80, color: '#f59e0b' }, // Laranja (Aeróbica Moderada)
       { name: 'Zona 4 (80-90%)', min: 0.80, max: 0.90, color: '#ef4444' }, // Vermelho (Limiar)
       { name: 'Zona 5 (90-100%)', min: 0.90, max: 1.00, color: '#dc2626' }, // Vermelho Escuro (Máxima)
@@ -255,7 +255,7 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
         zoomSnap: 0.1
       });
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { // Usar light_all para mapa claro
         subdomains: 'abcd',
         maxZoom: 19
       }).addTo(mapRef.current);
@@ -265,12 +265,12 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
     activities.forEach(activity => {
       if (activity.routeCoords && activity.routeCoords.length > 0) {
         L.polyline(activity.routeCoords, {
-          color: '#258cf4',
+          color: '#E95420', // Cor da primary
           weight: 3,
           opacity: 0.7,
           lineCap: 'round',
           lineJoin: 'round',
-          className: 'drop-shadow-[0_0_5px_rgba(37,140,244,0.4)]'
+          className: 'drop-shadow-[0_0_5px_rgba(233,84,32,0.4)]'
         }).addTo(mapRef.current!);
         allCoords.push(...activity.routeCoords);
       }
@@ -293,20 +293,20 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
 
 
   return (
-    <div className="bg-[#101922] min-h-screen pb-40 no-scrollbar overflow-y-auto relative">
-      <header className="flex flex-col px-6 pt-10 pb-6 sticky top-0 bg-[#101922]/90 backdrop-blur-xl z-20 border-b border-white/5">
+    <div className="bg-background-light min-h-screen pb-40 no-scrollbar overflow-y-auto relative">
+      <header className="flex flex-col px-6 pt-10 pb-6 sticky top-0 bg-background-light/90 backdrop-blur-xl z-20 border-b border-surface-medium">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-white text-3xl font-black tracking-tight italic">Performance</h2>
-          <div className="flex bg-surface-dark/50 p-1 rounded-2xl border border-white/5">
+          <h2 className="text-text-dark text-3xl font-black tracking-tight italic">Performance</h2>
+          <div className="flex bg-surface-light/50 p-1 rounded-2xl border border-surface-medium">
              <button 
                onClick={() => setTimeRange('weekly')}
-               className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${timeRange === 'weekly' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-500 hover:text-white'}`}
+               className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${timeRange === 'weekly' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-medium hover:text-text-dark'}`}
              >
                Semanal
              </button>
              <button 
                onClick={() => setTimeRange('monthly')}
-               className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${timeRange === 'monthly' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-500 hover:text-white'}`}
+               className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${timeRange === 'monthly' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-medium hover:text-text-dark'}`}
              >
                Mensal
              </button>
@@ -318,42 +318,42 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
         {/* Gráfico de Evolução */}
         <section className="space-y-6">
           <div className="flex justify-between items-end px-1">
-            <h3 className="text-white text-xl font-black tracking-tight">Evolução de Distância</h3>
-            <div className="flex items-center gap-1.5 text-emerald-400">
+            <h3 className="text-text-dark text-xl font-black tracking-tight">Evolução de Distância</h3>
+            <div className="flex items-center gap-1.5 text-accent-green">
               <span className="material-symbols-outlined text-[16px] font-black">trending_up</span>
               <span className="text-[10px] font-black">{timeRange === 'weekly' ? '+18.5% esta semana' : '+42% este mês'}</span>
             </div>
           </div>
-          <div className="bg-surface-dark p-8 rounded-[3rem] border border-white/5 shadow-2xl relative h-72 group">
+          <div className="bg-surface-light p-8 rounded-[3rem] border border-surface-medium shadow-2xl relative h-72 group">
             <div className="absolute top-8 right-8 flex items-center gap-2 opacity-40 group-hover:opacity-100 transition-opacity">
                <div className="size-2 rounded-full bg-primary animate-pulse"></div>
-               <span className="text-[8px] font-black uppercase tracking-[0.3em]">Dados em tempo real</span>
+               <span className="text-[8px] font-black uppercase tracking-[0.3em] text-text-light">Dados em tempo real</span>
             </div>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="distGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#258cf4" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#258cf4" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#E95420" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#E95420" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff05" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#00000005" />
                 <XAxis 
                   dataKey="name" 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fill: '#475569', fontSize: 10, fontWeight: 800 }} 
+                  tick={{ fill: '#555555', fontSize: 10, fontWeight: 800 }} 
                 />
                 <YAxis hide />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#182634', border: '1px solid #ffffff10', borderRadius: '16px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}
-                  itemStyle={{ color: '#258cf4', fontWeight: 900 }}
-                  labelStyle={{ color: '#94a3b8', fontWeight: 800, marginBottom: '4px' }}
+                  contentStyle={{ backgroundColor: '#F5F5F5', border: '1px solid #E0E0E0', borderRadius: '16px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}
+                  itemStyle={{ color: '#E95420', fontWeight: 900 }}
+                  labelStyle={{ color: '#888888', fontWeight: 800, marginBottom: '4px' }}
                 />
                 <Area 
                   type="monotone" 
                   dataKey="value" 
-                  stroke="#258cf4" 
+                  stroke="#E95420" 
                   strokeWidth={4} 
                   fillOpacity={1} 
                   fill="url(#distGradient)" 
@@ -366,74 +366,74 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
 
         {/* Quick Stats Grid */}
         <section className="grid grid-cols-2 gap-4">
-          <div className="bg-surface-dark rounded-[2.5rem] p-8 border border-white/5 space-y-4 shadow-lg group active:scale-95 transition-all">
+          <div className="bg-surface-light rounded-[2.5rem] p-8 border border-surface-medium space-y-4 shadow-lg group active:scale-95 transition-all">
              <div className="flex items-center gap-3">
                 <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
                   <span className="material-symbols-outlined">speed</span>
                 </div>
-                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Melhor Ritmo</p>
+                <p className="text-[10px] text-text-light font-black uppercase tracking-widest">Melhor Ritmo</p>
              </div>
-             <p className="text-4xl font-black text-white italic tracking-tighter">{bestPace} <span className="text-xs text-slate-600 not-italic">/km</span></p>
+             <p className="text-4xl font-black text-text-dark italic tracking-tighter">{bestPace} <span className="text-xs text-text-light not-italic">/km</span></p>
           </div>
-          <div className="bg-surface-dark rounded-[2.5rem] p-8 border border-white/5 space-y-4 shadow-lg group active:scale-95 transition-all">
+          <div className="bg-surface-light rounded-[2.5rem] p-8 border border-surface-medium space-y-4 shadow-lg group active:scale-95 transition-all">
              <div className="flex items-center gap-3">
                 <div className="size-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-all">
                   <span className="material-symbols-outlined">mountain_flag</span>
                 </div>
-                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Ganho Elev.</p>
+                <p className="text-[10px] text-text-light font-black uppercase tracking-widest">Ganho Elev.</p>
              </div>
-             <p className="text-4xl font-black text-white italic tracking-tighter">{totalElevation} <span className="text-xs text-slate-600 not-italic">m</span></p>
+             <p className="text-4xl font-black text-text-dark italic tracking-tighter">{totalElevation} <span className="text-xs text-text-light not-italic">m</span></p>
           </div>
           {/* New Quick Stat: Total Activities */}
-          <div className="bg-surface-dark rounded-[2.5rem] p-8 border border-white/5 space-y-4 shadow-lg group active:scale-95 transition-all">
+          <div className="bg-surface-light rounded-[2.5rem] p-8 border border-surface-medium space-y-4 shadow-lg group active:scale-95 transition-all">
              <div className="flex items-center gap-3">
                 <div className="size-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-all">
                   <span className="material-symbols-outlined">directions_run</span>
                 </div>
-                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Total Ativs</p>
+                <p className="text-[10px] text-text-light font-black uppercase tracking-widest">Total Ativs</p>
              </div>
-             <p className="text-4xl font-black text-white italic tracking-tighter">{totalActivities}</p>
+             <p className="text-4xl font-black text-text-dark italic tracking-tighter">{totalActivities}</p>
           </div>
           {/* New Quick Stat: Total Time */}
-          <div className="bg-surface-dark rounded-[2.5rem] p-8 border border-white/5 space-y-4 shadow-lg group active:scale-95 transition-all">
+          <div className="bg-surface-light rounded-[2.5rem] p-8 border border-surface-medium space-y-4 shadow-lg group active:scale-95 transition-all">
              <div className="flex items-center gap-3">
                 <div className="size-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-all">
                   <span className="material-symbols-outlined">timer</span>
                 </div>
-                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Tempo Total</p>
+                <p className="text-[10px] text-text-light font-black uppercase tracking-widest">Tempo Total</p>
              </div>
-             <p className="text-4xl font-black text-white italic tracking-tighter">{totalTimeString}</p>
+             <p className="text-4xl font-black text-text-dark italic tracking-tighter">{totalTimeString}</p>
           </div>
         </section>
 
         {/* Seção de Recordes Pessoais (PRs) */}
         <section className="space-y-6">
-          <h3 className="text-white text-xl font-black tracking-tight px-1">Recordes Pessoais</h3>
+          <h3 className="text-text-dark text-xl font-black tracking-tight px-1">Recordes Pessoais</h3>
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-surface-dark rounded-[2.5rem] p-6 border border-white/5 space-y-2 relative overflow-hidden group">
+            <div className="bg-surface-light rounded-[2.5rem] p-6 border border-surface-medium space-y-2 relative overflow-hidden group">
               <span className="material-symbols-outlined absolute top-4 right-4 text-primary/10 text-5xl group-hover:scale-110 transition-transform">star</span>
-              <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest">Ritmo 1KM</p>
-              <p className="text-white text-3xl font-black italic">{personalRecords.fastest1kPace}</p>
+              <p className="text-text-light text-[9px] font-black uppercase tracking-widest">Ritmo 1KM</p>
+              <p className="text-text-dark text-3xl font-black italic">{personalRecords.fastest1kPace}</p>
             </div>
-            <div className="bg-surface-dark rounded-[2.5rem] p-6 border border-white/5 space-y-2 relative overflow-hidden group">
+            <div className="bg-surface-light rounded-[2.5rem] p-6 border border-surface-medium space-y-2 relative overflow-hidden group">
               <span className="material-symbols-outlined absolute top-4 right-4 text-primary/10 text-5xl group-hover:scale-110 transition-transform">star</span>
-              <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest">Ritmo 5KM</p>
-              <p className="text-white text-3xl font-black italic">{personalRecords.fastest5kPace}</p>
+              <p className="text-text-light text-[9px] font-black uppercase tracking-widest">Ritmo 5KM</p>
+              <p className="text-text-dark text-3xl font-black italic">{personalRecords.fastest5kPace}</p>
             </div>
-            <div className="bg-surface-dark rounded-[2.5rem] p-6 border border-white/5 space-y-2 relative overflow-hidden group">
+            <div className="bg-surface-light rounded-[2.5rem] p-6 border border-surface-medium space-y-2 relative overflow-hidden group">
               <span className="material-symbols-outlined absolute top-4 right-4 text-primary/10 text-5xl group-hover:scale-110 transition-transform">star</span>
-              <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest">Ritmo 10KM</p>
-              <p className="text-white text-3xl font-black italic">{personalRecords.fastest10kPace}</p>
+              <p className="text-text-light text-[9px] font-black uppercase tracking-widest">Ritmo 10KM</p>
+              <p className="text-text-dark text-3xl font-black italic">{personalRecords.fastest10kPace}</p>
             </div>
-            <div className="bg-surface-dark rounded-[2.5rem] p-6 border border-white/5 space-y-2 relative overflow-hidden group">
+            <div className="bg-surface-light rounded-[2.5rem] p-6 border border-surface-medium space-y-2 relative overflow-hidden group">
               <span className="material-symbols-outlined absolute top-4 right-4 text-primary/10 text-5xl group-hover:scale-110 transition-transform">star</span>
-              <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest">Maior Distância</p>
-              <p className="text-white text-3xl font-black italic">{personalRecords.longestDistance} <span className="text-sm font-normal text-slate-500 not-italic ml-1">km</span></p>
+              <p className="text-text-light text-[9px] font-black uppercase tracking-widest">Maior Distância</p>
+              <p className="text-text-dark text-3xl font-black italic">{personalRecords.longestDistance} <span className="text-sm font-normal text-text-light not-italic ml-1">km</span></p>
             </div>
-            <div className="bg-surface-dark rounded-[2.5rem] p-6 border border-white/5 space-y-2 relative overflow-hidden group">
+            <div className="bg-surface-light rounded-[2.5rem] p-6 border border-surface-medium space-y-2 relative overflow-hidden group">
               <span className="material-symbols-outlined absolute top-4 right-4 text-primary/10 text-5xl group-hover:scale-110 transition-transform">star</span>
-              <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest">Mais Calorias</p>
-              <p className="text-white text-3xl font-black italic">{personalRecords.highestCalories} <span className="text-sm font-normal text-slate-500 not-italic ml-1">kcal</span></p>
+              <p className="text-text-light text-[9px] font-black uppercase tracking-widest">Mais Calorias</p>
+              <p className="text-text-dark text-3xl font-black italic">{personalRecords.highestCalories} <span className="text-sm font-normal text-text-light not-italic ml-1">kcal</span></p>
             </div>
           </div>
         </section>
@@ -441,24 +441,24 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
         {/* Distribuição de Zonas de Frequência Cardíaca */}
         {hrZoneDistribution.length > 0 && (
           <section className="space-y-6">
-            <h3 className="text-white text-xl font-black tracking-tight px-1">Zonas de Frequência Cardíaca</h3>
-            <div className="bg-surface-dark p-8 rounded-[3rem] border border-white/5 shadow-2xl relative h-72">
+            <h3 className="text-text-dark text-xl font-black tracking-tight px-1">Zonas de Frequência Cardíaca</h3>
+            <div className="bg-surface-light p-8 rounded-[3rem] border border-surface-medium shadow-2xl relative h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={hrZoneDistribution} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#ffffff05" />
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#00000005" />
                   <XAxis type="number" hide />
                   <YAxis 
                     dataKey="name" 
                     type="category" 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{ fill: '#475569', fontSize: 10, fontWeight: 800 }} 
+                    tick={{ fill: '#555555', fontSize: 10, fontWeight: 800 }} 
                     width={80}
                   />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#182634', border: '1px solid #ffffff10', borderRadius: '16px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}
-                    itemStyle={{ color: '#fff', fontWeight: 900 }}
-                    labelStyle={{ color: '#94a3b8', fontWeight: 800, marginBottom: '4px' }}
+                    contentStyle={{ backgroundColor: '#F5F5F5', border: '1px solid #E0E0E0', borderRadius: '16px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}
+                    itemStyle={{ color: '#1A1A1A', fontWeight: 900 }}
+                    labelStyle={{ color: '#888888', fontWeight: 800, marginBottom: '4px' }}
                     formatter={(value: number, name: string) => [`${value} Atividades`, name]}
                   />
                   <Bar dataKey="value" radius={[0, 10, 10, 0]} animationDuration={1000}>
@@ -474,16 +474,16 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
 
         {/* Mapa de Rotas de Treino */}
         <section className="space-y-6">
-          <h3 className="text-white text-xl font-black tracking-tight px-1">Suas Rotas de Treino</h3>
-          <div className="bg-surface-dark p-4 rounded-[3rem] border border-white/5 shadow-2xl relative h-80 overflow-hidden">
+          <h3 className="text-text-dark text-xl font-black tracking-tight px-1">Suas Rotas de Treino</h3>
+          <div className="bg-surface-light p-4 rounded-[3rem] border border-surface-medium shadow-2xl relative h-80 overflow-hidden">
             {activities.some(a => a.routeCoords && a.routeCoords.length > 0) ? (
               <div id="all-routes-map" ref={mapContainerRef} className="w-full h-full rounded-[2.5rem] overflow-hidden"></div>
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-center space-y-4 opacity-40">
-                <span className="material-symbols-outlined text-6xl">map</span>
+                <span className="material-symbols-outlined text-6xl text-text-light">map</span>
                 <div>
-                  <p className="text-white font-black">Nenhuma rota registrada</p>
-                  <p className="text-xs text-slate-500 mt-1 uppercase tracking-widest">Comece um treino para ver suas rotas aqui</p>
+                  <p className="text-text-dark font-black">Nenhuma rota registrada</p>
+                  <p className="text-xs text-text-light mt-1 uppercase tracking-widest">Comece um treino para ver suas rotas aqui</p>
                 </div>
               </div>
             )}
@@ -492,8 +492,8 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
 
         {/* Activity Distribution */}
         <section className="space-y-6">
-           <h3 className="text-white text-xl font-black tracking-tight px-1">Distribuição de Atividades</h3>
-           <div className="bg-surface-dark p-8 rounded-[3rem] border border-white/5 flex items-center justify-between shadow-2xl overflow-hidden relative">
+           <h3 className="text-text-dark text-xl font-black tracking-tight px-1">Distribuição de Atividades</h3>
+           <div className="bg-surface-light p-8 rounded-[3rem] border border-surface-medium flex items-center justify-between shadow-2xl overflow-hidden relative">
               <div className="h-40 w-1/2">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={typeDistribution}>
@@ -509,7 +509,7 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
                 {typeDistribution.map((t, i) => (
                   <div key={i} className="flex items-center justify-between">
                     <div className="size-3 rounded-full" style={{ backgroundColor: t.color }}></div>
-                    <span className="text-[10px] font-black uppercase text-slate-400">{t.name}</span>
+                    <span className="text-[10px] font-black uppercase text-text-light">{t.name}</span>
                   </div>
                 ))}
               </div>
@@ -519,7 +519,7 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
         {/* Conquistas (Horizontal Scroll) */}
         <section className="space-y-6">
            <div className="flex justify-between items-end px-1">
-              <h3 className="text-white text-xl font-black tracking-tight">Conquistas Desbloqueadas</h3>
+              <h3 className="text-text-dark text-xl font-black tracking-tight">Conquistas Desbloqueadas</h3>
               <button 
                 onClick={() => setShowAllAchievements(true)}
                 className="text-primary text-[10px] font-black uppercase tracking-widest border-b border-primary/20 pb-0.5"
@@ -529,17 +529,17 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
            </div>
            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 -mx-6 px-6">
               {unlockedAchievements.map((badge) => (
-                <div key={badge.id} className="shrink-0 w-32 h-40 bg-surface-dark border border-white/5 rounded-[2.2rem] flex flex-col items-center justify-center gap-3 p-4 shadow-xl active:scale-95 transition-transform">
+                <div key={badge.id} className="shrink-0 w-32 h-40 bg-surface-light border border-surface-medium rounded-[2.2rem] flex flex-col items-center justify-center gap-3 p-4 shadow-xl active:scale-95 transition-transform">
                    <div className={`size-14 rounded-2xl flex items-center justify-center ${badge.bg} ${badge.color} shadow-lg shadow-black/20`}>
                       <span className="material-symbols-outlined text-[32px]">{badge.icon}</span>
                    </div>
-                   <span className="text-[10px] font-black uppercase tracking-tighter text-center leading-tight h-8 flex items-center">{badge.title}</span>
+                   <span className="text-[10px] font-black uppercase tracking-tighter text-center leading-tight h-8 flex items-center text-text-dark">{badge.title}</span>
                 </div>
               ))}
               {unlockedAchievements.length === 0 && (
                 <div className="w-full py-10 flex flex-col items-center justify-center opacity-30 text-center">
-                  <span className="material-symbols-outlined text-6xl">lock</span>
-                  <p className="text-[10px] font-black uppercase tracking-widest px-10">Realize seu primeiro treino para desbloquear medalhas</p>
+                  <span className="material-symbols-outlined text-6xl text-text-light">lock</span>
+                  <p className="text-[10px] font-black uppercase tracking-widest px-10 text-text-light">Realize seu primeiro treino para desbloquear medalhas</p>
                 </div>
               )}
            </div>
@@ -548,14 +548,14 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
 
       {/* Modal de Todas as Conquistas */}
       {showAllAchievements && (
-        <div className="fixed inset-0 z-[100] bg-black/98 backdrop-blur-3xl flex flex-col animate-in fade-in duration-500">
-          <header className="p-8 flex justify-between items-center shrink-0 border-b border-white/5">
-            <h3 className="text-2xl font-black italic uppercase tracking-tighter">Hall da Fama</h3>
+        <div className="fixed inset-0 z-[100] bg-background-light/98 backdrop-blur-3xl flex flex-col animate-in fade-in duration-500">
+          <header className="p-8 flex justify-between items-center shrink-0 border-b border-surface-medium">
+            <h3 className="text-text-dark text-2xl font-black italic uppercase tracking-tighter">Hall da Fama</h3>
             <button 
               onClick={() => setShowAllAchievements(false)} 
-              className="size-12 rounded-full bg-white/10 flex items-center justify-center active:scale-90 transition-transform"
+              className="size-12 rounded-full bg-surface-medium/50 flex items-center justify-center active:scale-90 transition-transform"
             >
-              <span className="material-symbols-outlined">close</span>
+              <span className="material-symbols-outlined text-text-dark">close</span>
             </button>
           </header>
 
@@ -566,19 +566,19 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
                   return (
                     <div 
                       key={ach.id} 
-                      className={`relative rounded-[2.5rem] border p-6 space-y-4 flex flex-col items-center text-center transition-all ${isUnlocked ? 'bg-surface-dark border-primary/20 shadow-2xl shadow-primary/5' : 'bg-surface-dark/40 border-white/5 grayscale opacity-40'}`}
+                      className={`relative rounded-[2.5rem] border p-6 space-y-4 flex flex-col items-center text-center transition-all ${isUnlocked ? 'bg-surface-light border-primary/20 shadow-2xl shadow-primary/5' : 'bg-surface-light/40 border-surface-medium grayscale opacity-40'}`}
                     >
                        {!isUnlocked && (
-                         <div className="absolute top-4 right-4 text-slate-500">
+                         <div className="absolute top-4 right-4 text-text-light">
                            <span className="material-symbols-outlined text-sm">lock</span>
                          </div>
                        )}
-                       <div className={`size-20 rounded-3xl flex items-center justify-center ${isUnlocked ? ach.bg + ' ' + ach.color : 'bg-white/5 text-slate-600'} shadow-inner`}>
+                       <div className={`size-20 rounded-3xl flex items-center justify-center ${isUnlocked ? ach.bg + ' ' + ach.color : 'bg-surface-medium/50 text-text-light'} shadow-inner`}>
                           <span className="material-symbols-outlined text-[42px]">{ach.icon}</span>
                        </div>
                        <div>
-                          <h4 className={`text-sm font-black uppercase tracking-tight mb-1 ${isUnlocked ? 'text-white' : 'text-slate-500'}`}>{ach.title}</h4>
-                          <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">{ach.desc}</p>
+                          <h4 className={`text-sm font-black uppercase tracking-tight mb-1 ${isUnlocked ? 'text-text-dark' : 'text-text-light'}`}>{ach.title}</h4>
+                          <p className="text-[9px] text-text-light font-bold uppercase tracking-widest leading-relaxed">{ach.desc}</p>
                        </div>
                     </div>
                   );
@@ -590,12 +590,12 @@ const Stats: React.FC<StatsProps> = ({ navigate, activities, user }) => {
                   <span className="material-symbols-outlined text-3xl">emoji_events</span>
                 </div>
                 <div>
-                   <h5 className="text-white text-lg font-black italic uppercase tracking-tight">Mestre da Performance</h5>
-                   <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">
+                   <h5 className="text-text-dark text-lg font-black italic uppercase tracking-tight">Mestre da Performance</h5>
+                   <p className="text-text-light text-[10px] font-bold uppercase tracking-widest mt-1">
                      Desbloqueou {unlockedAchievements.length} de {ALL_ACHIEVEMENTS.length} conquistas totais
                    </p>
                 </div>
-                <div className="w-full h-2 bg-background-dark rounded-full overflow-hidden mt-2">
+                <div className="w-full h-2 bg-surface-medium rounded-full overflow-hidden mt-2">
                    <div 
                      className="h-full bg-primary transition-all duration-1000" 
                      style={{ width: `${(unlockedAchievements.length / ALL_ACHIEVEMENTS.length) * 100}%` }}

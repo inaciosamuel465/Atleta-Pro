@@ -67,15 +67,15 @@ const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateU
   };
 
   return (
-    <div className="bg-[#101922] min-h-screen pb-40 no-scrollbar overflow-y-auto">
-      <header className="flex items-center px-6 pt-10 pb-6 justify-between border-b border-white/5 sticky top-0 bg-[#101922]/90 backdrop-blur-xl z-20">
-        <h2 className="text-white text-3xl font-black tracking-tight italic uppercase">Atleta</h2>
+    <div className="bg-background-light min-h-screen pb-40 no-scrollbar overflow-y-auto">
+      <header className="flex items-center px-6 pt-10 pb-6 justify-between border-b border-surface-medium sticky top-0 bg-background-light/90 backdrop-blur-xl z-20">
+        <h2 className="text-text-dark text-3xl font-black tracking-tight italic uppercase">Atleta</h2>
         <div className="flex gap-3">
           <button onClick={handleLogout} className="size-11 flex items-center justify-center rounded-2xl bg-red-500/10 text-red-500 border border-red-500/20">
             <span className="material-symbols-outlined">logout</span>
           </button>
-          <button onClick={() => setIsEditing(true)} className="size-11 flex items-center justify-center rounded-2xl bg-surface-dark border border-white/5">
-            <span className="material-symbols-outlined text-white">settings</span>
+          <button onClick={() => setIsEditing(true)} className="size-11 flex items-center justify-center rounded-2xl bg-surface-light border border-surface-medium">
+            <span className="material-symbols-outlined text-text-dark">settings</span>
           </button>
         </div>
       </header>
@@ -83,39 +83,39 @@ const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateU
       <div className="flex flex-col items-center pt-10 px-6">
         <div className="relative mb-8 group cursor-pointer" onClick={() => setShowImagePicker(true)}>
           <div className="absolute -inset-4 bg-primary/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <img src={user.avatar} className="size-40 rounded-[3.5rem] border-4 border-surface-dark shadow-2xl object-cover relative z-10" alt="User" />
-          <div className="absolute bottom-1 right-1 size-12 bg-primary rounded-2xl border-4 border-[#101922] flex items-center justify-center text-white shadow-lg shadow-primary/30 z-20 group-hover:scale-110 transition-transform">
+          <img src={user.avatar} className="size-40 rounded-[3.5rem] border-4 border-surface-light shadow-2xl object-cover relative z-10" alt="User" />
+          <div className="absolute bottom-1 right-1 size-12 bg-primary rounded-2xl border-4 border-background-light flex items-center justify-center text-white shadow-lg shadow-primary/30 z-20 group-hover:scale-110 transition-transform">
             <span className="material-symbols-outlined text-[24px]">photo_camera</span>
           </div>
         </div>
 
         <div className="text-center space-y-2 mb-10">
           <div className="flex items-center justify-center gap-3">
-            <h1 className="text-4xl font-black text-white tracking-tighter italic uppercase">{user.name}</h1>
+            <h1 className="text-4xl font-black text-text-dark tracking-tighter italic uppercase">{user.name}</h1>
             <span className="bg-primary/20 text-primary text-[10px] font-black px-4 py-2 rounded-xl border border-primary/20 uppercase tracking-widest italic">Elite Lvl {Math.floor(activities.reduce((a,b)=>a+b.distance, 0)/5) + 1}</span>
           </div>
-          <p className="text-slate-400 text-[11px] font-black uppercase tracking-[0.2em] italic opacity-70">"{user.status}"</p>
+          <p className="text-text-light text-[11px] font-black uppercase tracking-[0.2em] italic opacity-70">"{user.status}"</p>
         </div>
 
         {/* METAS */}
         <section className="w-full space-y-6 mb-12">
            <div className="flex justify-between items-center px-2">
-              <h3 className="text-slate-500 text-[10px] font-black uppercase tracking-widest italic">Objetivos de Performance</h3>
+              <h3 className="text-text-light text-[10px] font-black uppercase tracking-widest italic">Objetivos de Performance</h3>
               <button onClick={() => setIsEditing(true)} className="text-primary text-[10px] font-black uppercase tracking-widest">Ajustar</button>
            </div>
            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-surface-dark/60 rounded-[2.5rem] p-7 border border-white/5 space-y-3">
-                 <p className="text-slate-600 text-[9px] font-black uppercase tracking-widest italic">Meta Semanal (Km)</p>
+              <div className="bg-surface-light/60 rounded-[2.5rem] p-7 border border-surface-medium space-y-3">
+                 <p className="text-text-light text-[9px] font-black uppercase tracking-widest italic">Meta Semanal (Km)</p>
                  <div className="flex items-baseline gap-2">
-                    <span className="text-white text-4xl font-black italic tracking-tighter">{user.weeklyGoal || 20}</span>
-                    <span className="text-slate-600 text-xs font-bold">KM</span>
+                    <span className="text-text-dark text-4xl font-black italic tracking-tighter">{user.weeklyGoal || 20}</span>
+                    <span className="text-text-light text-xs font-bold">KM</span>
                  </div>
               </div>
-              <div className="bg-surface-dark/60 rounded-[2.5rem] p-7 border border-white/5 space-y-3">
-                 <p className="text-slate-600 text-[9px] font-black uppercase tracking-widest italic">Meta Mensal (Km)</p>
+              <div className="bg-surface-light/60 rounded-[2.5rem] p-7 border border-surface-medium space-y-3">
+                 <p className="text-text-light text-[9px] font-black uppercase tracking-widest italic">Meta Mensal (Km)</p>
                  <div className="flex items-baseline gap-2">
-                    <span className="text-white text-4xl font-black italic tracking-tighter">{user.monthlyGoal || 80}</span>
-                    <span className="text-slate-600 text-xs font-bold">KM</span>
+                    <span className="text-text-dark text-4xl font-black italic tracking-tighter">{user.monthlyGoal || 80}</span>
+                    <span className="text-text-light text-xs font-bold">KM</span>
                  </div>
               </div>
            </div>
@@ -124,11 +124,11 @@ const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateU
 
       {/* MODAL IMAGE PICKER */}
       {showImagePicker && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/95 backdrop-blur-3xl p-6 animate-in fade-in duration-300">
-          <div className="w-full max-w-sm bg-surface-dark rounded-[3.5rem] p-8 border border-white/10 space-y-8 animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-background-light/95 backdrop-blur-3xl p-6 animate-in fade-in duration-300">
+          <div className="w-full max-w-sm bg-surface-light rounded-[3.5rem] p-8 border border-surface-medium space-y-8 animate-in zoom-in-95 duration-300">
             <div className="flex justify-between items-center">
-              <h4 className="text-white text-xl font-black uppercase italic tracking-tighter">Escolher Avatar</h4>
-              <button onClick={() => setShowImagePicker(false)} className="text-slate-500">
+              <h4 className="text-text-dark text-xl font-black uppercase italic tracking-tighter">Escolher Avatar</h4>
+              <button onClick={() => setShowImagePicker(false)} className="text-text-light">
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
@@ -145,7 +145,7 @@ const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateU
               ))}
               <button 
                 onClick={() => fileInputRef.current?.click()}
-                className="size-16 rounded-2xl bg-white/5 flex flex-col items-center justify-center text-primary border-2 border-dashed border-primary/20"
+                className="size-16 rounded-2xl bg-surface-medium/50 flex flex-col items-center justify-center text-primary border-2 border-dashed border-primary/20"
               >
                 <span className="material-symbols-outlined">add_photo_alternate</span>
                 <span className="text-[7px] font-black uppercase">Subir</span>
@@ -154,8 +154,8 @@ const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateU
             
             <input type="file" accept="image/*" ref={fileInputRef} className="hidden" onChange={handleFileChange} />
             
-            <div className="pt-4 border-t border-white/5">
-                <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest text-center">Ou use uma URL personalizada no menu de edição</p>
+            <div className="pt-4 border-t border-surface-medium">
+                <p className="text-text-light text-[9px] font-black uppercase tracking-widest text-center">Ou use uma URL personalizada no menu de edição</p>
             </div>
           </div>
         </div>
@@ -163,29 +163,29 @@ const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateU
 
       {/* MODAL EDIÇÃO */}
       {isEditing && (
-        <div className="fixed inset-0 z-[100] flex items-end justify-center px-4 pb-10 bg-black/90 backdrop-blur-xl animate-in fade-in duration-300">
-          <div className="w-full max-w-sm bg-surface-dark rounded-[3.5rem] p-10 border border-white/10 shadow-2xl overflow-y-auto no-scrollbar max-h-[90vh]">
+        <div className="fixed inset-0 z-[100] flex items-end justify-center px-4 pb-10 bg-background-light/90 backdrop-blur-xl animate-in fade-in duration-300">
+          <div className="w-full max-w-sm bg-surface-light rounded-[3.5rem] p-10 border border-surface-medium shadow-2xl overflow-y-auto no-scrollbar max-h-[90vh]">
             <div className="flex items-center justify-between mb-8">
-              <h4 className="text-white text-2xl font-black italic tracking-tighter uppercase">Perfil do Atleta</h4>
-              <button onClick={() => setIsEditing(false)} className="size-10 rounded-xl bg-white/5 flex items-center justify-center">
-                <span className="material-symbols-outlined">close</span>
+              <h4 className="text-text-dark text-2xl font-black italic tracking-tighter uppercase">Perfil do Atleta</h4>
+              <button onClick={() => setIsEditing(false)} className="size-10 rounded-xl bg-surface-medium/50 flex items-center justify-center">
+                <span className="material-symbols-outlined text-text-dark">close</span>
               </button>
             </div>
 
             <div className="space-y-6 pb-4">
               {/* Removido: Link da Foto de Perfil */}
               <div className="space-y-2">
-                <p className="text-slate-500 text-[9px] font-black uppercase ml-2 italic">Nome</p>
-                <input className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white font-black italic outline-none" value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} />
+                <p className="text-text-light text-[9px] font-black uppercase ml-2 italic">Nome</p>
+                <input className="w-full h-12 bg-surface-medium/40 border border-surface-medium rounded-xl px-4 text-text-dark font-black italic outline-none" value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <p className="text-slate-500 text-[9px] font-black uppercase ml-2 italic">Km Semana</p>
-                  <input type="number" className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white font-black italic text-center" value={editData.weeklyGoal} onChange={e => setEditData({...editData, weeklyGoal: Number(e.target.value)})} />
+                  <p className="text-text-light text-[9px] font-black uppercase ml-2 italic">Km Semana</p>
+                  <input type="number" className="w-full h-12 bg-surface-medium/40 border border-surface-medium rounded-xl px-4 text-text-dark font-black italic text-center outline-none" value={editData.weeklyGoal} onChange={e => setEditData({...editData, weeklyGoal: Number(e.target.value)})} />
                 </div>
                 <div className="space-y-2">
-                  <p className="text-slate-500 text-[9px] font-black uppercase ml-2 italic">Km Mês</p>
-                  <input type="number" className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white font-black italic text-center" value={editData.monthlyGoal} onChange={e => setEditData({...editData, monthlyGoal: Number(e.target.value)})} />
+                  <p className="text-text-light text-[9px] font-black uppercase ml-2 italic">Km Mês</p>
+                  <input type="number" className="w-full h-12 bg-surface-medium/40 border border-surface-medium rounded-xl px-4 text-text-dark font-black italic text-center outline-none" value={editData.monthlyGoal} onChange={e => setEditData({...editData, monthlyGoal: Number(e.target.value)})} />
                 </div>
               </div>
               <button onClick={handleSave} className="w-full h-16 bg-primary text-white rounded-[2rem] font-black uppercase italic shadow-lg active:scale-95 transition-all mt-4">

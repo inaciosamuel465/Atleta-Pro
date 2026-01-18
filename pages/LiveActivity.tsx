@@ -90,24 +90,24 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
           attributionControl: false
         }).setView([-23.5505, -46.6333], 16);
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { // Usar light_all para mapa claro
           subdomains: 'abcd',
           maxZoom: 19
         }).addTo(mapRef.current);
         
         polylineRef.current = L.polyline([], { 
-          color: '#258cf4', 
+          color: '#E95420', // Cor da primary
           weight: 6,
           opacity: 1,
           lineCap: 'round',
           lineJoin: 'round',
-          className: 'drop-shadow-[0_0_10px_rgba(37,140,244,0.6)]'
+          className: 'drop-shadow-[0_0_10px_rgba(233,84,32,0.6)]'
         }).addTo(mapRef.current);
 
         markerRef.current = L.circleMarker([-23.5505, -46.6333], {
           radius: 8,
-          fillColor: '#ffffff',
-          color: '#258cf4',
+          fillColor: '#1A1A1A', // Cor do texto escuro
+          color: '#E95420', // Cor da primary
           weight: 4,
           fillOpacity: 1
         }).addTo(mapRef.current);
@@ -304,15 +304,15 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
   };
 
   return (
-    <div className="h-full w-full bg-background-dark text-white flex flex-col overflow-hidden relative">
+    <div className="h-full w-full bg-background-light text-text-dark flex flex-col overflow-hidden relative">
       {!isTreadmillMode && <div id="live-map" ref={mapContainerRef} className="absolute inset-0 z-0"></div>}
-      <div className="absolute inset-0 bg-gradient-to-b from-background-dark/80 via-transparent to-background-dark/95 z-10 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-background-light/80 via-transparent to-background-light/95 z-10 pointer-events-none"></div>
 
       {/* GPS Signal Indicator (only if not treadmill mode) */}
       {!isTreadmillMode && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/5">
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-surface-light/80 backdrop-blur-md px-3 py-1 rounded-full border border-surface-medium">
           <div className={`size-2 rounded-full ${gpsAccuracy && gpsAccuracy < 15 ? 'bg-green-500' : gpsAccuracy && gpsAccuracy < 30 ? 'bg-yellow-500' : 'bg-red-500'} animate-pulse`}></div>
-          <span className="text-[9px] font-black uppercase tracking-widest text-slate-300">GPS {gpsAccuracy ? Math.round(gpsAccuracy) + 'm' : 'Wait...'}</span>
+          <span className="text-[9px] font-black uppercase tracking-widest text-text-light">GPS {gpsAccuracy ? Math.round(gpsAccuracy) + 'm' : 'Wait...'}</span>
         </div>
       )}
 
@@ -322,21 +322,21 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
             {isPaused ? 'PAUSADO' : (isTreadmillMode ? 'ESTEIRA' : 'GRAVANDO')}
           </span>
           <h3 className="text-6xl font-black italic tracking-tighter font-lexend leading-none drop-shadow-lg">
-            {currentTotalDistance.toFixed(2)} <span className="text-slate-400 text-lg not-italic font-bold">KM</span>
+            {currentTotalDistance.toFixed(2)} <span className="text-text-light text-lg not-italic font-bold">KM</span>
           </h3>
         </div>
         
         <div className="flex gap-3">
             <button 
                 onClick={() => setShowMusicMenu(true)}
-                className="size-12 rounded-2xl flex items-center justify-center border transition-all active:scale-95 bg-[#1DB954] border-[#1DB954] text-black shadow-[0_0_20px_rgba(29,185,84,0.4)]"
+                className="size-12 rounded-2xl flex items-center justify-center border transition-all active:scale-95 bg-[#1DB954] border-[#1DB954] text-white shadow-[0_0_20px_rgba(29,185,84,0.4)]"
             >
                 <span className="material-symbols-outlined font-black">music_note</span>
             </button>
 
             <button 
             onClick={() => setVoiceEnabled(!voiceEnabled)}
-            className={`size-12 rounded-2xl flex items-center justify-center border transition-all active:scale-95 ${voiceEnabled ? 'bg-primary border-primary text-white shadow-[0_0_20px_rgba(37,140,244,0.4)]' : 'bg-black/40 backdrop-blur-md border-white/10 text-slate-400'}`}
+            className={`size-12 rounded-2xl flex items-center justify-center border transition-all active:scale-95 ${voiceEnabled ? 'bg-primary border-primary text-white shadow-[0_0_20px_rgba(233,84,32,0.4)]' : 'bg-surface-light/80 backdrop-blur-md border-surface-medium text-text-light'}`}
             >
             <span className="material-symbols-outlined">{voiceEnabled ? 'volume_up' : 'volume_off'}</span>
             </button>
@@ -346,28 +346,28 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
       {/* Center Feedback Area / Manual Distance Input */}
       <div className="flex-1 z-20 flex items-center justify-center pointer-events-none">
          {isTreadmillMode ? (
-            <div className="bg-black/60 backdrop-blur-xl px-8 py-4 rounded-[2rem] border border-white/10 animate-in zoom-in fade-in duration-500 pointer-events-auto">
-               <p className="text-white text-xl font-black italic uppercase tracking-tighter mb-2 text-center">Distância Manual</p>
+            <div className="bg-surface-light/80 backdrop-blur-xl px-8 py-4 rounded-[2rem] border border-surface-medium animate-in zoom-in fade-in duration-500 pointer-events-auto">
+               <p className="text-text-dark text-xl font-black italic uppercase tracking-tighter mb-2 text-center">Distância Manual</p>
                <input
                   type="number"
                   step="0.1"
                   value={manualDistance.toFixed(1)}
                   onChange={(e) => setManualDistance(parseFloat(e.target.value))}
-                  className="w-32 bg-transparent text-center text-5xl font-black text-white italic outline-none border-b-2 border-primary/20 focus:border-primary pb-3 transition-all"
+                  className="w-32 bg-transparent text-center text-5xl font-black text-text-dark italic outline-none border-b-2 border-primary/20 focus:border-primary pb-3 transition-all"
                />
             </div>
          ) : (
             <div className="flex flex-col items-center gap-4">
                 {lastKmMarked > 0 && (currentTotalDistance - lastKmMarked < 0.1) && (
-                    <div className="bg-black/60 backdrop-blur-xl px-8 py-4 rounded-[2rem] border border-white/10 animate-in zoom-in fade-in duration-500">
-                       <p className="text-white text-2xl font-black italic uppercase tracking-tighter">KM {lastKmMarked}</p>
+                    <div className="bg-surface-light/80 backdrop-blur-xl px-8 py-4 rounded-[2rem] border border-surface-medium animate-in zoom-in fade-in duration-500">
+                       <p className="text-text-dark text-2xl font-black italic uppercase tracking-tighter">KM {lastKmMarked}</p>
                     </div>
                 )}
                 {/* Current Speed Display */}
                 {!isPaused && currentSpeed > 0.5 && ( // Only show if not paused and moving
-                    <div className="bg-black/60 backdrop-blur-xl px-8 py-4 rounded-[2rem] border border-white/10 animate-in zoom-in fade-in duration-500">
-                        <p className="text-white text-xl font-black italic uppercase tracking-tighter mb-2 text-center">Velocidade Atual</p>
-                        <p className="text-center text-5xl font-black text-white italic font-lexend">{currentSpeed.toFixed(1)} <span className="text-lg text-slate-400 not-italic font-bold">KM/H</span></p>
+                    <div className="bg-surface-light/80 backdrop-blur-xl px-8 py-4 rounded-[2rem] border border-surface-medium animate-in zoom-in fade-in duration-500">
+                        <p className="text-text-dark text-xl font-black italic uppercase tracking-tighter mb-2 text-center">Velocidade Atual</p>
+                        <p className="text-center text-5xl font-black text-text-dark italic font-lexend">{currentSpeed.toFixed(1)} <span className="text-lg text-text-light not-italic font-bold">KM/H</span></p>
                     </div>
                 )}
             </div>
@@ -375,22 +375,22 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
       </div>
 
       {/* Control Panel */}
-      <section className="bg-surface-dark/80 backdrop-blur-[40px] rounded-t-[3.5rem] p-8 pb-16 z-30 shadow-[0_-20px_60px_rgba(0,0,0,0.6)] border-t border-white/5">
+      <section className="bg-surface-light/80 backdrop-blur-[40px] rounded-t-[3.5rem] p-8 pb-16 z-30 shadow-[0_-20px_60px_rgba(0,0,0,0.2)] border-t border-surface-medium">
         <div className="grid grid-cols-3 gap-8 mb-10 px-4"> {/* Alterado para 3 colunas */}
            <div className="text-center">
-              <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1 italic">Ritmo Médio</p>
-              <h4 className="text-4xl font-black italic tracking-tighter font-lexend text-white">{paceStr}</h4>
+              <p className="text-text-light text-[10px] font-black uppercase tracking-widest mb-1 italic">Ritmo Médio</p>
+              <h4 className="text-4xl font-black italic tracking-tighter font-lexend text-text-dark">{paceStr}</h4>
            </div>
            <div className="text-center relative">
-              <div className="absolute left-0 top-2 bottom-2 w-px bg-white/10"></div>
-              <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1 italic">Cronômetro</p>
-              <h4 className="text-4xl font-black italic tracking-tighter font-lexend text-white">{timeStr}</h4>
+              <div className="absolute left-0 top-2 bottom-2 w-px bg-surface-medium"></div>
+              <p className="text-text-light text-[10px] font-black uppercase tracking-widest mb-1 italic">Cronômetro</p>
+              <h4 className="text-4xl font-black italic tracking-tighter font-lexend text-text-dark">{timeStr}</h4>
            </div>
            <div className="text-center relative">
-              <div className="absolute left-0 top-2 bottom-2 w-px bg-white/10"></div>
-              <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1 italic">F. Cardíaca</p>
-              <h4 className="text-4xl font-black italic tracking-tighter font-lexend text-white">
-                {currentHeartRate > 0 ? currentHeartRate : '--'} <span className="text-lg text-slate-400 not-italic font-bold">BPM</span>
+              <div className="absolute left-0 top-2 bottom-2 w-px bg-surface-medium"></div>
+              <p className="text-text-light text-[10px] font-black uppercase tracking-widest mb-1 italic">F. Cardíaca</p>
+              <h4 className="text-4xl font-black italic tracking-tighter font-lexend text-text-dark">
+                {currentHeartRate > 0 ? currentHeartRate : '--'} <span className="text-lg text-text-light not-italic font-bold">BPM</span>
               </h4>
            </div>
         </div>
@@ -398,7 +398,7 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
         <div className="flex gap-4">
            <button 
               onClick={() => setIsPaused(!isPaused)}
-              className={`h-24 flex-1 rounded-[2.5rem] border-2 flex flex-col items-center justify-center gap-1 transition-all active:scale-95 ${isPaused ? 'bg-primary border-primary text-white shadow-2xl shadow-primary/30' : 'bg-white/5 border-white/5 text-white hover:bg-white/10'}`}
+              className={`h-24 flex-1 rounded-[2.5rem] border-2 flex flex-col items-center justify-center gap-1 transition-all active:scale-95 ${isPaused ? 'bg-primary border-primary text-white shadow-2xl shadow-primary/30' : 'bg-surface-light border-surface-medium text-text-dark hover:bg-surface-medium'}`}
            >
               <span className="material-symbols-outlined text-4xl font-black">{isPaused ? 'play_arrow' : 'pause'}</span>
               <span className="text-[9px] font-black uppercase tracking-widest italic">{isPaused ? 'Retomar' : 'Pausar'}</span>
@@ -406,9 +406,9 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
            
            <button 
               onClick={handleFinishWorkout}
-              className="h-24 flex-1 rounded-[2.5rem] bg-white text-black flex flex-col items-center justify-center gap-1 active:scale-95 shadow-2xl transition-all"
+              className="h-24 flex-1 rounded-[2.5rem] bg-primary text-white flex flex-col items-center justify-center gap-1 active:scale-95 shadow-2xl transition-all"
            >
-              <span className="material-symbols-outlined text-4xl font-black text-accent-red">stop</span>
+              <span className="material-symbols-outlined text-4xl font-black">stop</span>
               <span className="text-[9px] font-black uppercase tracking-widest italic">Finalizar</span>
            </button>
         </div>
@@ -416,27 +416,27 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
 
       {/* MUSIC MENU OVERLAY */}
       {showMusicMenu && (
-          <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col justify-end animate-in fade-in duration-200">
+          <div className="absolute inset-0 z-50 bg-background-light/90 backdrop-blur-md flex flex-col justify-end animate-in fade-in duration-200">
              <div onClick={() => setShowMusicMenu(false)} className="flex-1 w-full" />
-             <div className="bg-surface-dark rounded-t-[3rem] p-8 border-t border-white/10 shadow-2xl animate-in slide-in-from-bottom duration-300">
+             <div className="bg-surface-light rounded-t-[3rem] p-8 border-t border-surface-medium shadow-2xl animate-in slide-in-from-bottom duration-300">
                 <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center gap-3">
                         <span className="material-symbols-outlined text-[#1DB954] text-3xl">graphic_eq</span>
-                        <h4 className="text-white text-xl font-black italic uppercase tracking-tighter">DJ Mode</h4>
+                        <h4 className="text-text-dark text-xl font-black italic uppercase tracking-tighter">DJ Mode</h4>
                     </div>
-                    <button onClick={() => setShowMusicMenu(false)} className="size-10 rounded-xl bg-white/5 flex items-center justify-center"><span className="material-symbols-outlined">close</span></button>
+                    <button onClick={() => setShowMusicMenu(false)} className="size-10 rounded-xl bg-surface-medium/50 flex items-center justify-center"><span className="material-symbols-outlined text-text-dark">close</span></button>
                 </div>
                 {/* Playlist Buttons */}
                 <div className="space-y-3">
-                    <button onClick={() => handleOpenSpotify()} className="w-full h-16 rounded-2xl bg-[#1DB954] text-black font-black uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg">
+                    <button onClick={() => handleOpenSpotify()} className="w-full h-16 rounded-2xl bg-[#1DB954] text-white font-black uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg">
                         <span className="material-symbols-outlined">play_circle</span> Abrir Spotify
                     </button>
                     <div className="grid grid-cols-2 gap-3">
-                        <button onClick={() => handleOpenSpotify('Workout Motivation')} className="h-20 rounded-2xl bg-white/5 border border-white/5 flex flex-col items-center justify-center gap-1 hover:bg-white/10">
-                            <span className="material-symbols-outlined text-orange-500">local_fire_department</span> <span className="text-[9px] font-black uppercase">Power Mix</span>
+                        <button onClick={() => handleOpenSpotify('Workout Motivation')} className="h-20 rounded-2xl bg-surface-light border border-surface-medium flex flex-col items-center justify-center gap-1 hover:bg-surface-medium">
+                            <span className="material-symbols-outlined text-orange-500">local_fire_department</span> <span className="text-[9px] font-black uppercase text-text-dark">Power Mix</span>
                         </button>
-                        <button onClick={() => handleOpenSpotify('Running Hits 160BPM')} className="h-20 rounded-2xl bg-white/5 border border-white/5 flex flex-col items-center justify-center gap-1 hover:bg-white/10">
-                             <span className="material-symbols-outlined text-blue-500">bolt</span> <span className="text-[9px] font-black uppercase">160 BPM</span>
+                        <button onClick={() => handleOpenSpotify('Running Hits 160BPM')} className="h-20 rounded-2xl bg-surface-light border border-surface-medium flex flex-col items-center justify-center gap-1 hover:bg-surface-medium">
+                             <span className="material-symbols-outlined text-blue-500">bolt</span> <span className="text-[9px] font-black uppercase text-text-dark">160 BPM</span>
                         </button>
                     </div>
                 </div>
