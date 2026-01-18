@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { AppScreen } from '../types';
 
@@ -35,12 +34,13 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentScreen, onNavigate }) => {
         </button>
       </div>
 
+      {/* Novo botão para Programas de Treino */}
       <button 
-        onClick={() => onNavigate(AppScreen.STATS)}
-        className={`flex flex-col items-center gap-1.5 p-2 w-16 transition-all ${currentScreen === AppScreen.STATS ? 'text-primary scale-110' : 'text-slate-500 hover:text-white'}`}
+        onClick={() => onNavigate(AppScreen.TRAINING_PROGRAMS)}
+        className={`flex flex-col items-center gap-1.5 p-2 w-16 transition-all ${currentScreen === AppScreen.TRAINING_PROGRAMS ? 'text-primary scale-110' : 'text-slate-500 hover:text-white'}`}
       >
-        <span className={`material-symbols-outlined text-[28px] ${currentScreen === AppScreen.STATS ? 'fill-current font-bold' : ''}`}>insights</span>
-        <span className="text-[8px] font-black uppercase tracking-widest">Stats</span>
+        <span className={`material-symbols-outlined text-[28px] ${currentScreen === AppScreen.TRAINING_PROGRAMS ? 'fill-current font-bold' : ''}`}>fitness_center</span>
+        <span className="text-[8px] font-black uppercase tracking-widest">Progrm</span>
       </button>
 
       <button 
