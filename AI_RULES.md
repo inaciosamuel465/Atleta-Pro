@@ -9,7 +9,7 @@ This document outlines the core technologies and best practices for developing a
 *   **Routing:** A custom, state-based routing system (`currentScreen` in `App.tsx`) manages navigation between different application views.
 *   **Mapping:** Leaflet.js is utilized for interactive maps, displaying activity routes and real-time GPS tracking.
 *   **Backend & Database:** Firebase provides authentication services and serves as the NoSQL database (Firestore) for user profiles and activity data.
-*   **AI Integration:** The Google Gemini API (`@google/generative-ai`) is integrated for generating personalized AI insights for users.
+*   **AI Integration:** The Google Gemini API (`@google/genai`) is integrated for generating personalized AI insights for users.
 *   **Charting & Data Visualization:** Recharts is employed for creating responsive and interactive data charts to display user statistics.
 *   **Screenshot Capture:** `html2canvas` is used to capture DOM elements as images, primarily for generating shareable workout cards.
 *   **Icons:** Material Symbols Outlined from Google Fonts are used for all iconography within the application.
@@ -24,7 +24,7 @@ To maintain consistency and efficiency, please adhere to the following rules whe
 *   **Navigation:** Continue to use the existing `currentScreen` state and `navigate` function in `App.tsx` for routing. Do not introduce `react-router-dom` or similar routing libraries unless the current system becomes a significant bottleneck for complex routing needs.
 *   **Maps:** For any new map-related features, use Leaflet.js. Do not introduce other mapping libraries.
 *   **Backend/Auth/DB:** All backend interactions, including user authentication and data storage, must be handled via Firebase (Auth and Firestore). Do not introduce other backend services or database solutions.
-*   **AI Features:** For any new AI-driven functionalities, leverage the `@google/generative-ai` library.
+*   **AI Features:** For any new AI-driven functionalities, leverage the `@google/genai` library.
 *   **Charts:** When visualizing data, use Recharts.
 *   **Image Generation:** If you need to capture a visual representation of a component or screen, use `html2canvas`.
 *   **Icons:** Use icons from the Material Symbols Outlined library.
