@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { AppScreen, UserProfile, Activity, Challenge, TrainingProgram, ProgramActivity } from '../types';
 import ChallengeDetailModal from '../components/ChallengeDetailModal';
 
@@ -12,9 +12,10 @@ interface DashboardProps {
   aiLoading: boolean;
   challenges: Challenge[]; // Nova prop para a lista de desafios
   nextProgramActivity?: { program: TrainingProgram; activity: ProgramActivity } | null; // Nova prop
+  activities: Activity[]; // Nova prop: lista completa de atividades
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivity, isAdmin, aiInsight, aiLoading, challenges, nextProgramActivity }) => {
+const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivity, isAdmin, aiInsight, aiLoading, challenges, nextProgramActivity, activities }) => {
   const MONTHLY_GOAL = user.monthlyGoal || 80;
   const WEEKLY_GOAL = user.weeklyGoal || 20;
   
@@ -32,6 +33,37 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
     setSelectedChallenge(challenge);
     setShowChallengeModal(true);
   };
+
+  // Helper para converter pace string para segundos
+  const paceToSeconds = (paceStr: string) => {
+    const matches = paceStr.match(/(\d+)'\s*(\d+)"/);
+    if (!matches) return 999999; // Um valor alto para indicar um ritmo muito lento ou inválido
+    return parseInt(matches[1]) * 60 + parseInt(matches[2]);
+  };
+
+  // Cálculo dos Recordes Pessoais (PRs)
+  const personalRecords = useMemo(() => {
+    let fastest1kPace = "99'99\"";
+    let longestDistance = 0;
+
+    activities.forEach(activity => {
+      // Fastest Pace (overall, assuming pace is for 1km)
+      if (paceToSeconds(activity.pace) < paceToSeconds(fastest1kPace)) {
+        fastest1kPace = activity.pace;
+      }
+
+      // Longest Distance
+      if (activity.distance > longestDistance) {
+        longestDistance = activity.distance;
+      }
+    });
+
+    return {
+      fastest1kPace: fastest1kPace === "99'99\"" ? "--'--\"" : fastest1kPace,
+      longestDistance: longestDistance.toFixed(1),
+    };
+  }, [activities]);
+
 
   return (
     <div className="pb-40 bg-background-light min-h-screen relative no-scrollbar overflow-y-auto animate-in fade-in duration-700">
@@ -206,6 +238,26 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
                 aiInsight || "Comece a treinar para receber insights personalizados!"
               )}
             </p>
+          </div>
+        </section>
+
+        {/* Recordes Pessoais (PRs) */}
+        <section className="space-y-6">
+          <div className="flex justify-between items-end px-1">
+            <h3 className="text-text-dark text-xl font-black tracking-tight italic uppercase font-lexend">Seus Recordes</h3>
+            <button onClick={() => navigate(AppScreen.STATS)} className="text-primary text-[10px] font-black uppercase tracking-widest border-b border-primary/20 pb-0.5">Ver Todos</button>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-surface-light rounded-[2.5rem] p-6 border border-surface-medium space-y-2 relative overflow-hidden group">
+              <span className="material-symbols-outlined absolute top-4 right-4 text-primary/10 text-5xl group-hover:scale-110 transition-transform">star</span>
+              <p className="text-text-light text-[9px] font-black uppercase tracking-widest">Melhor Ritmo 1KM</p>
+              <p className="text-text-dark text-3xl font-black italic">{personalRecords.fastest1kPace}</p>
+            </div>
+            <div className="bg-surface-light rounded-[2.5rem] p-6 border border-surface-medium space-y-2 relative overflow-hidden group">
+              <span className="material-symbols-outlined absolute top-4 right-4 text-primary/10 text-5xl group-hover:scale-110 transition-transform">star</span>
+              <p className="text-text-light text-[9px] font-black uppercase tracking-widest">Maior Distância</p>
+              <p className="text-text-dark text-3xl font-black italic">{personalRecords.longestDistance} <span className="text-sm font-normal text-text-light not-italic ml-1">km</span></p>
+            </div>
           </div>
         </section>
 

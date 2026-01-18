@@ -618,7 +618,8 @@ const App: React.FC = () => {
           aiInsight={aiInsight} 
           aiLoading={aiLoading} 
           challenges={challenges} 
-          nextProgramActivity={nextProgramActivity} // Passar a próxima atividade
+          nextProgramActivity={nextProgramActivity} 
+          activities={activities} // Passar a lista completa de atividades
         />;
       case AppScreen.START_ACTIVITY:
         return <StartActivity 
@@ -654,7 +655,7 @@ const App: React.FC = () => {
           challenges={challenges} 
           onUpdateChallenge={handleUpdateChallenge} 
           onDeleteChallenge={handleDeleteChallenge} 
-        /> : <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} aiInsight={aiInsight} aiLoading={aiLoading} challenges={challenges} />;
+        /> : <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} aiInsight={aiInsight} aiLoading={aiLoading} challenges={challenges} activities={activities} />;
       case AppScreen.TRAINING_PROGRAMS: // Nova rota para Programas de Treino
         return <TrainingPrograms 
           navigate={navigate} 
@@ -665,7 +666,7 @@ const App: React.FC = () => {
           onStartProgramActivity={handleStartProgramActivityFromModal} // Passar a nova função
         />;
       default:
-        return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} aiInsight={aiInsight} aiLoading={aiLoading} challenges={challenges} />;
+        return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} aiInsight={aiInsight} aiLoading={aiLoading} challenges={challenges} activities={activities} />;
     }
   };
 
