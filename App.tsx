@@ -4,7 +4,7 @@ import { doc, onSnapshot, collection, query, orderBy, setDoc, addDoc, serverTime
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { auth, db, storage } from './firebase';
 import { showSuccess, showError } from './src/utils/toast';
-import GoogleGenerativeAI from '@google/genai'; // Importar GoogleGenerativeAI como exportação padrão
+import { GoogleGenerativeAI } from '@google/generative-ai'; // Importar GoogleGenerativeAI do pacote correto
 
 import { AppScreen, UserProfile, Activity } from './types'; // AIInsight removido
 import { INITIAL_USER } from './constants';
