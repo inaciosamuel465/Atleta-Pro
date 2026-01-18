@@ -221,6 +221,50 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, w
     }
   };
 
+  // Função para gerar arquivo GPX
+  const generateGpx = () => {
+    if (!workout?.routeCoords || workout.routeCoords.length === 0) {
+      showError("Nenhuma rota para exportar.");
+      return;
+    }
+
+    const header = `<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" creator="Atleta Pro" version="1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+  <trk>
+    <name>${workout.title || 'Atividade'}</name>
+    <trkseg>`;
+
+    const trackpoints = workout.routeCoords.map(coord => {
+      const [lat, lon] = coord;
+      // Adiciona um timestamp fictício ou real se disponível
+      const time = workout.date ? `<time>${new Date(workout.date).toISOString()}</time>` : '';
+      return `      <trkpt lat="${lat}" lon="${lon}">${time}</trkpt>`;
+    }).join('\n');
+
+    const footer = `    </trkseg>
+  </trk>
+</gpx>`;
+
+    return header + '\n' + trackpoints + '\n' + footer;
+  };
+
+  const handleExportGpx = () => {
+    const gpxContent = generateGpx();
+    if (gpxContent) {
+      const blob = new Blob([gpxContent], { type: 'application/gpx+xml' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `atleta-pro-${workout.title?.replace(/\s/g, '-') || 'activity'}-${Date.now()}.gpx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showSuccess("Arquivo GPX exportado!");
+    }
+  };
+
   if (!workout) return null;
 
   // --- TEMPLATE RENDERERS ---
@@ -429,6 +473,17 @@ const PostWorkout: React.FC<PostWorkoutProps> = ({ onSave, onDiscard, onClose, w
                   <span className="material-symbols-outlined text-white text-3xl">check_circle</span>
                 </>
              )}
+          </button>
+        )}
+
+        {/* Botão de Exportar GPX */}
+        {workout.routeCoords && workout.routeCoords.length > 0 && (
+          <button 
+            onClick={handleExportGpx}
+            className="w-full h-16 bg-white/5 text-white rounded-[2rem] font-black uppercase italic shadow-lg active:scale-95 transition-all mt-4 border border-white/10 hover:bg-white/10"
+          >
+            <span className="material-symbols-outlined text-xl mr-2">download</span>
+            Exportar Rota (GPX)
           </button>
         )}
       </main>

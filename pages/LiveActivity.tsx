@@ -27,7 +27,9 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
   const [laps, setLaps] = useState<Lap[]>([]);
   const [currentSpeed, setCurrentSpeed] = useState(0);
   const [gpsAccuracy, setGpsAccuracy] = useState<number | null>(null);
-  
+  const [currentHeartRate, setCurrentHeartRate] = useState(0); // Novo estado para frequência cardíaca
+  const heartRateHistoryRef = useRef<number[]>([]); // Histórico para calcular a média
+
   const [lastKmMarked, setLastKmMarked] = useState(0);
   const [voiceEnabled, setVoiceEnabled] = useState(workoutConfig.voiceCues !== false);
   const [showMusicMenu, setShowMusicMenu] = useState(false);
@@ -125,8 +127,6 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
         mapRef.current.remove();
         mapRef.current = null;
         polylineRef.current = null;
-        // Removed startMarkerRef.current = null;
-        // Removed endMarkerRef.current = null;
       }
     };
   }, [isTreadmillMode]); // Only re-run if treadmill mode changes
@@ -234,6 +234,36 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
     };
   }, [isPaused, isTreadmillMode]); // Dependências: isPaused e isTreadmillMode
 
+  // Heart Rate Simulation
+  useEffect(() => {
+    if (isPaused || isTreadmillMode) { // HR only active when not paused and not treadmill mode
+      setCurrentHeartRate(0);
+      return;
+    }
+
+    const simulateHeartRate = () => {
+      // Base HR, adjust based on activity intensity (simulated by speed)
+      let baseHr = 80; // Resting HR
+      if (currentSpeed > 0) {
+        baseHr = 120 + Math.floor(currentSpeed * 2); // Increase with speed
+      }
+      
+      // Add some random fluctuation
+      const fluctuation = Math.floor(Math.random() * 10) - 5; // +/- 5 bpm
+      let newHr = baseHr + fluctuation;
+
+      // Keep HR within a reasonable range (e.g., 60-190 bpm)
+      newHr = Math.max(60, Math.min(190, newHr));
+      
+      setCurrentHeartRate(newHr);
+      heartRateHistoryRef.current.push(newHr); // Store for average calculation
+    };
+
+    const hrInterval = setInterval(simulateHeartRate, 2000); // Update every 2 seconds
+
+    return () => clearInterval(hrInterval);
+  }, [isPaused, isTreadmillMode, currentSpeed]);
+
   // Lap Logic (uses currentTotalDistance)
   useEffect(() => {
     const currentKm = Math.floor(currentTotalDistance);
@@ -255,6 +285,22 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
       window.location.href = "spotify:app";
       setTimeout(() => window.open("https://open.spotify.com", "_blank"), 500);
     }
+  };
+
+  const handleFinishWorkout = () => {
+    const totalHeartRate = heartRateHistoryRef.current.reduce((sum, hr) => sum + hr, 0);
+    const averageHeartRate = heartRateHistoryRef.current.length > 0 
+      ? Math.round(totalHeartRate / heartRateHistoryRef.current.length) 
+      : 0;
+
+    onFinish({ 
+      distance: currentTotalDistance, 
+      time: timeStr, 
+      pace: paceStr, 
+      routeCoords: route, 
+      laps: laps,
+      heartRate: averageHeartRate // Salva a média da FC
+    });
   };
 
   return (
@@ -330,15 +376,22 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
 
       {/* Control Panel */}
       <section className="bg-surface-dark/80 backdrop-blur-[40px] rounded-t-[3.5rem] p-8 pb-16 z-30 shadow-[0_-20px_60px_rgba(0,0,0,0.6)] border-t border-white/5">
-        <div className="grid grid-cols-2 gap-8 mb-10 px-4">
+        <div className="grid grid-cols-3 gap-8 mb-10 px-4"> {/* Alterado para 3 colunas */}
            <div className="text-center">
               <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1 italic">Ritmo Médio</p>
-              <h4 className="text-5xl font-black italic tracking-tighter font-lexend text-white">{paceStr}</h4>
+              <h4 className="text-4xl font-black italic tracking-tighter font-lexend text-white">{paceStr}</h4>
            </div>
            <div className="text-center relative">
               <div className="absolute left-0 top-2 bottom-2 w-px bg-white/10"></div>
               <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1 italic">Cronômetro</p>
-              <h4 className="text-5xl font-black italic tracking-tighter font-lexend text-white">{timeStr}</h4>
+              <h4 className="text-4xl font-black italic tracking-tighter font-lexend text-white">{timeStr}</h4>
+           </div>
+           <div className="text-center relative">
+              <div className="absolute left-0 top-2 bottom-2 w-px bg-white/10"></div>
+              <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1 italic">F. Cardíaca</p>
+              <h4 className="text-4xl font-black italic tracking-tighter font-lexend text-white">
+                {currentHeartRate > 0 ? currentHeartRate : '--'} <span className="text-lg text-slate-400 not-italic font-bold">BPM</span>
+              </h4>
            </div>
         </div>
 
@@ -352,7 +405,7 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
            </button>
            
            <button 
-              onClick={() => onFinish({ distance: currentTotalDistance, time: timeStr, pace: paceStr, routeCoords: route, laps: laps })}
+              onClick={handleFinishWorkout}
               className="h-24 flex-1 rounded-[2.5rem] bg-white text-black flex flex-col items-center justify-center gap-1 active:scale-95 shadow-2xl transition-all"
            >
               <span className="material-symbols-outlined text-4xl font-black text-accent-red">stop</span>

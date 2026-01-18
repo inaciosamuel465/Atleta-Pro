@@ -38,6 +38,7 @@ export interface Activity {
   laps?: Lap[];
   terrain?: 'Asfalto' | 'Trilha' | 'Esteira';
   voiceCues?: boolean;
+  heartRate?: number; // Novo campo para frequência cardíaca média
 }
 
 export interface UserProfile {

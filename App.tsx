@@ -278,6 +278,7 @@ const App: React.FC = () => {
           time: postWorkoutData.time || "00:00",
           pace: postWorkoutData.pace || "0'00\"",
           calories: Math.floor((postWorkoutData.distance || 0) * 70),
+          heartRate: postWorkoutData.heartRate || 0, // Inclui a frequência cardíaca
           createdAt: serverTimestamp()
         };
         
