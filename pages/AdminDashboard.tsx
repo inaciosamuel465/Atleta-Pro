@@ -3,7 +3,7 @@ import { AppScreen, UserProfile } from '../types';
 import { doc, setDoc, collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
 import { showSuccess, showError } from '../src/utils/toast';
-import AdminEditUser from '../components/AdminEditUser'; // Importar o novo componente
+import AdminEditUser from '../components/AdminEditUser';
 
 interface AdminDashboardProps {
   navigate: (screen: AppScreen) => void;
@@ -102,7 +102,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate, avatarGallery
           <h3 className="text-white text-xl font-black tracking-tight italic uppercase">Gerenciar Usuários</h3>
           <div className="space-y-4 max-h-80 overflow-y-auto no-scrollbar pr-1">
             {allUsers.length > 0 ? allUsers.map((user) => (
-              <div key={user.uid} className="flex items-center justify-between bg-black/40 p-4 rounded-2xl border border-white/5">
+              <div 
+                key={user.uid} 
+                className="flex items-center justify-between bg-black/40 p-4 rounded-2xl border border-white/5 hover:bg-white/5 transition-colors"
+              >
                 <div className="flex items-center gap-3">
                   <img src={user.avatar} className="size-10 rounded-full object-cover" alt="User Avatar" />
                   <div>
@@ -126,19 +129,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate, avatarGallery
         {/* Gerenciamento de Galeria de Avatares */}
         <section className="space-y-6 bg-surface-dark rounded-[2.5rem] p-8 border border-white/5">
           <h3 className="text-white text-xl font-black tracking-tight italic uppercase">Avatares</h3>
-          <div className="flex gap-2 mb-4">
+          <div className="relative mb-4">
             <input
               type="text"
               placeholder="Nova URL de Avatar"
               value={newAvatarUrl}
               onChange={(e) => setNewAvatarUrl(e.target.value)}
-              className="flex-1 h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white text-xs outline-none focus:border-primary"
+              className="w-full h-14 bg-black/40 border border-white/10 rounded-2xl pl-5 pr-16 text-white text-sm outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold"
             />
             <button
               onClick={handleAddAvatarUrl}
-              className="size-12 rounded-xl bg-primary flex items-center justify-center text-white active:scale-95 transition-all"
+              className="absolute right-2 top-2 bottom-2 aspect-square bg-primary rounded-xl flex items-center justify-center text-white active:scale-95 transition-all shadow-lg"
             >
-              <span className="material-symbols-outlined">add</span>
+              <span className="material-symbols-outlined text-xl">add</span>
             </button>
           </div>
           <div className="grid grid-cols-4 gap-3 max-h-60 overflow-y-auto no-scrollbar pr-1">
@@ -154,24 +157,27 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate, avatarGallery
               </div>
             ))}
           </div>
+          <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest text-center mt-4">
+            As alterações nas galerias são salvas automaticamente.
+          </p>
         </section>
 
         {/* Gerenciamento de Galeria de Atividades */}
         <section className="space-y-6 bg-surface-dark rounded-[2.5rem] p-8 border border-white/5">
           <h3 className="text-white text-xl font-black tracking-tight italic uppercase">Imagens de Atividade</h3>
-          <div className="flex gap-2 mb-4">
+          <div className="relative mb-4">
             <input
               type="text"
               placeholder="Nova URL de Imagem de Atividade"
               value={newWorkoutUrl}
               onChange={(e) => setNewWorkoutUrl(e.target.value)}
-              className="flex-1 h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white text-xs outline-none focus:border-primary"
+              className="w-full h-14 bg-black/40 border border-white/10 rounded-2xl pl-5 pr-16 text-white text-sm outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold"
             />
             <button
               onClick={handleAddWorkoutUrl}
-              className="size-12 rounded-xl bg-primary flex items-center justify-center text-white active:scale-95 transition-all"
+              className="absolute right-2 top-2 bottom-2 aspect-square bg-primary rounded-xl flex items-center justify-center text-white active:scale-95 transition-all shadow-lg"
             >
-              <span className="material-symbols-outlined">add</span>
+              <span className="material-symbols-outlined text-xl">add</span>
             </button>
           </div>
           <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto no-scrollbar pr-1">
@@ -187,6 +193,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate, avatarGallery
               </div>
             ))}
           </div>
+          <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest text-center mt-4">
+            As alterações nas galerias são salvas automaticamente.
+          </p>
         </section>
       </main>
 

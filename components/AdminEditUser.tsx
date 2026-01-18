@@ -61,7 +61,7 @@ const AdminEditUser: React.FC<AdminEditUserProps> = ({ user, avatarGallery, onSa
             <p className="text-slate-500 text-[9px] font-black uppercase ml-2 italic">Nome</p>
             <input 
               name="name"
-              className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white font-black italic outline-none" 
+              className="w-full h-14 bg-black/40 border border-white/10 rounded-2xl px-5 text-white font-black italic outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold" 
               value={editData.name} 
               onChange={handleChange} 
             />
@@ -72,7 +72,7 @@ const AdminEditUser: React.FC<AdminEditUserProps> = ({ user, avatarGallery, onSa
             <p className="text-slate-500 text-[9px] font-black uppercase ml-2 italic">Status</p>
             <input 
               name="status"
-              className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white font-black italic outline-none" 
+              className="w-full h-14 bg-black/40 border border-white/10 rounded-2xl px-5 text-white font-black italic outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold" 
               value={editData.status} 
               onChange={handleChange} 
             />
@@ -83,7 +83,7 @@ const AdminEditUser: React.FC<AdminEditUserProps> = ({ user, avatarGallery, onSa
             <p className="text-slate-500 text-[9px] font-black uppercase ml-2 italic">Gênero</p>
             <select 
               name="gender"
-              className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white font-black italic outline-none" 
+              className="w-full h-14 bg-black/40 border border-white/10 rounded-2xl px-5 text-white font-black italic outline-none focus:border-primary transition-all" 
               value={editData.gender} 
               onChange={handleChange}
             >
@@ -100,7 +100,7 @@ const AdminEditUser: React.FC<AdminEditUserProps> = ({ user, avatarGallery, onSa
               <input 
                 name="height"
                 type="number" 
-                className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white font-black italic text-center" 
+                className="w-full h-14 bg-black/40 border border-white/10 rounded-2xl px-5 text-white font-black italic text-center outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold" 
                 value={editData.height} 
                 onChange={handleChange} 
               />
@@ -110,7 +110,7 @@ const AdminEditUser: React.FC<AdminEditUserProps> = ({ user, avatarGallery, onSa
               <input 
                 name="weight"
                 type="number" 
-                className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white font-black italic text-center" 
+                className="w-full h-14 bg-black/40 border border-white/10 rounded-2xl px-5 text-white font-black italic text-center outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold" 
                 value={editData.weight} 
                 onChange={handleChange} 
               />
@@ -123,7 +123,7 @@ const AdminEditUser: React.FC<AdminEditUserProps> = ({ user, avatarGallery, onSa
             <input 
               name="age"
               type="number" 
-              className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white font-black italic text-center" 
+              className="w-full h-14 bg-black/40 border border-white/10 rounded-2xl px-5 text-white font-black italic text-center outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold" 
               value={editData.age} 
               onChange={handleChange} 
             />
@@ -136,7 +136,7 @@ const AdminEditUser: React.FC<AdminEditUserProps> = ({ user, avatarGallery, onSa
               <input 
                 name="weeklyGoal"
                 type="number" 
-                className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white font-black italic text-center" 
+                className="w-full h-14 bg-black/40 border border-white/10 rounded-2xl px-5 text-white font-black italic text-center outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold" 
                 value={editData.weeklyGoal} 
                 onChange={handleChange} 
               />
@@ -146,7 +146,7 @@ const AdminEditUser: React.FC<AdminEditUserProps> = ({ user, avatarGallery, onSa
               <input 
                 name="monthlyGoal"
                 type="number" 
-                className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white font-black italic text-center" 
+                className="w-full h-14 bg-black/40 border border-white/10 rounded-2xl px-5 text-white font-black italic text-center outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold" 
                 value={editData.monthlyGoal} 
                 onChange={handleChange} 
               />
@@ -158,7 +158,7 @@ const AdminEditUser: React.FC<AdminEditUserProps> = ({ user, avatarGallery, onSa
             <p className="text-slate-500 text-[9px] font-black uppercase ml-2 italic">Personalidade do Coach</p>
             <select 
               name="coachPersonality"
-              className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white font-black italic outline-none" 
+              className="w-full h-14 bg-black/40 border border-white/10 rounded-2xl px-5 text-white font-black italic outline-none focus:border-primary transition-all" 
               value={editData.coachPersonality} 
               onChange={handleChange}
             >
