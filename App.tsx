@@ -1,13 +1,12 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { GoogleGenAI } from '@google/genai';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, onSnapshot, collection, query, orderBy, setDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { auth, db, storage } from './firebase';
 import { showSuccess, showError } from './src/utils/toast';
 
-import { AppScreen, UserProfile, Activity, AIInsight } from './types';
-import { INITIAL_USER } from './constants'; // DUMMY_ACTIVITIES removido
+import { AppScreen, UserProfile, Activity } from './types'; // AIInsight removido
+import { INITIAL_USER } from './constants';
 
 // Pages
 import InitializeProfile from './pages/InitializeProfile';
@@ -29,13 +28,9 @@ const App: React.FC = () => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [activeWorkout, setActiveWorkout] = useState<Partial<Activity> | null>(null);
-  const [aiInsight, setAiInsight] = useState<AIInsight | null>(null);
-  const [isGeneratingInsight, setIsGeneratingInsight] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [avatarGallery, setAvatarGallery] = useState<string[]>([]);
   const [workoutGallery, setWorkoutGallery] = useState<string[]>([]);
-
-  const hasShownAiErrorToast = useRef(false);
 
   const isAdmin = user?.email === 'admin@atleta.com';
 
@@ -122,55 +117,11 @@ const App: React.FC = () => {
         setCurrentScreen(AppScreen.INITIALIZE);
         setAvatarGallery([]);
         setWorkoutGallery([]);
-        hasShownAiErrorToast.current = false;
       }
     });
 
     return () => unsubscribeAuth();
   }, [currentScreen]);
-
-  // Gerador de Insights Inteligentes com Gemini
-  useEffect(() => {
-    if (activities.length > 0 && !aiInsight && !isGeneratingInsight && user && process.env.API_KEY) {
-      const getInsight = async () => {
-        setIsGeneratingInsight(true);
-        try {
-          const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-          const lastActivity = activities[0];
-          const today = new Date().toLocaleDateString('pt-BR');
-          
-          const response = await ai.models.generateContent({
-            model: 'gemini-3-flash-preview',
-            contents: `Você é um coach de performance de elite com personalidade ${user.coachPersonality || 'Motivador'}. 
-            Analise o último treino de ${user.name} em ${lastActivity.date} com Distância: ${lastActivity.distance}km, Ritmo: ${lastActivity.pace}. 
-            Considerando que hoje é ${today}, forneça um insight técnico motivador extremamente curto (max 15 palavras) para o dashboard do app, 
-            que seja relevante para o dia atual ou para o próximo objetivo do atleta.`,
-          });
-          
-          const text = response.text;
-          if (text) {
-            setAiInsight({
-              title: "Coach Elite IA",
-              message: text.replace(/[#*]/g, '').trim(),
-              action: "Ver Análise"
-            });
-          }
-        } catch (e) {
-          console.error("Erro ao gerar insight IA:", e);
-          // Mostrar erro apenas para admin e uma vez por sessão
-          if (isAdmin && !hasShownAiErrorToast.current) {
-            showError("Erro ao gerar insight de IA. Verifique sua chave API."); 
-            hasShownAiErrorToast.current = true;
-          }
-        } finally {
-          setIsGeneratingInsight(false);
-        }
-      };
-      
-      const timer = setTimeout(getInsight, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [activities, aiInsight, isGeneratingInsight, user, isAdmin]);
 
   const navigate = useCallback((screen: AppScreen) => {
     setCurrentScreen(screen);
@@ -230,7 +181,6 @@ const App: React.FC = () => {
   const handleLogout = async () => {
       try {
         await signOut(auth);
-        setAiInsight(null);
         showSuccess("Você saiu da sua conta.");
       } catch (error) {
         console.error("Erro ao sair:", error);
@@ -347,7 +297,6 @@ const App: React.FC = () => {
         }
         
         setActiveWorkout(null);
-        setAiInsight(null);
         navigate(AppScreen.DASHBOARD);
       } catch (error) {
         console.error("Erro ao salvar/atualizar atividade:", error);
@@ -377,7 +326,7 @@ const App: React.FC = () => {
 
     switch (currentScreen) {
       case AppScreen.DASHBOARD:
-        return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} aiInsight={aiInsight} isGeneratingInsight={isGeneratingInsight} isAdmin={isAdmin} />;
+        return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} />;
       case AppScreen.START_ACTIVITY:
         return <StartActivity onBack={() => navigate(AppScreen.DASHBOARD)} onStart={handleStartWorkout} />;
       case AppScreen.LIVE_ACTIVITY:
@@ -393,9 +342,9 @@ const App: React.FC = () => {
       case AppScreen.MUSIC:
         return <Music onBack={() => navigate(AppScreen.DASHBOARD)} />;
       case AppScreen.ADMIN_DASHBOARD:
-        return isAdmin ? <AdminDashboard navigate={navigate} avatarGallery={avatarGallery} workoutGallery={workoutGallery} onUpdateAnyUser={handleUpdateAnyUser} /> : <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} aiInsight={aiInsight} isGeneratingInsight={isGeneratingInsight} isAdmin={isAdmin} />;
+        return isAdmin ? <AdminDashboard navigate={navigate} avatarGallery={avatarGallery} workoutGallery={workoutGallery} onUpdateAnyUser={handleUpdateAnyUser} /> : <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} />;
       default:
-        return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} aiInsight={aiInsight} isGeneratingInsight={isGeneratingInsight} isAdmin={isAdmin} />;
+        return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} />;
     }
   };
 

@@ -8,7 +8,7 @@ export enum AppScreen {
   PROFILE = 'PROFILE',
   MUSIC = 'MUSIC',
   STATS = 'STATS',
-  ADMIN_DASHBOARD = 'ADMIN_DASHBOARD' // Nova tela para o portal de administração
+  ADMIN_DASHBOARD = 'ADMIN_DASHBOARD'
 }
 
 export interface Lap {
@@ -31,7 +31,7 @@ export interface Activity {
   mapImage: string;
   activityImage?: string;
   aspectRatio?: '9:16' | '16:9';
-  template?: 'Vortex' | 'Minimal' | 'Datastream'; // Corrigido para refletir os templates
+  template?: 'Vortex' | 'Minimal' | 'Datastream';
   targetDistance?: number;
   targetTime?: number;
   routeCoords?: [number, number][];
@@ -56,12 +56,6 @@ export interface UserProfile {
   monthlyGoal: number;
   coachPersonality?: 'Motivador' | 'Técnico' | 'Zen';
   voiceCues?: boolean;
-}
-
-export interface AIInsight {
-  title: string;
-  message: string;
-  action: string;
 }
 
 export interface Challenge {

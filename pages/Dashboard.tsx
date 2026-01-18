@@ -1,23 +1,21 @@
 import React, { useState } from 'react';
-import { AppScreen, UserProfile, Activity, AIInsight, Challenge } from '../types';
-import ChallengeDetailModal from '../components/ChallengeDetailModal'; // Importar o novo componente
+import { AppScreen, UserProfile, Activity, Challenge } from '../types'; // AIInsight removido
+import ChallengeDetailModal from '../components/ChallengeDetailModal';
 
 interface DashboardProps {
   navigate: (screen: AppScreen) => void;
   user: UserProfile;
-  stats: { distance: string; calories: string | number; time: string; pace: string; rawDistance: number; rawWeeklyDistance: number }; // Adicionado rawWeeklyDistance
+  stats: { distance: string; calories: string | number; time: string; pace: string; rawDistance: number; rawWeeklyDistance: number };
   lastActivity: Activity | undefined;
-  aiInsight: AIInsight | null;
-  isGeneratingInsight: boolean;
   isAdmin: boolean;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivity, aiInsight, isGeneratingInsight, isAdmin }) => {
+const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivity, isAdmin }) => {
   const MONTHLY_GOAL = user.monthlyGoal || 80;
-  const WEEKLY_GOAL = user.weeklyGoal || 20; // Nova meta semanal
+  const WEEKLY_GOAL = user.weeklyGoal || 20;
   
   const monthlyProgressPercent = Math.min(Math.round((stats.rawDistance / MONTHLY_GOAL) * 100), 100);
-  const weeklyProgressPercent = Math.min(Math.round((stats.rawWeeklyDistance / WEEKLY_GOAL) * 100), 100); // Novo progresso semanal
+  const weeklyProgressPercent = Math.min(Math.round((stats.rawWeeklyDistance / WEEKLY_GOAL) * 100), 100);
 
   const [showChallengeModal, setShowChallengeModal] = useState(false);
 
@@ -30,6 +28,19 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
     icon: 'military_tech',
     color: 'orange',
   };
+
+  // Dica de Performance Calculada
+  const performanceTip = (() => {
+    if (stats.rawWeeklyDistance >= WEEKLY_GOAL) {
+      return `Parabéns, ${user.name.split(' ')[0]}! Você superou sua meta semanal. Mantenha o ritmo!`;
+    } else if (stats.rawWeeklyDistance > WEEKLY_GOAL * 0.75) {
+      return `Quase lá, ${user.name.split(' ')[0]}! Faltam poucos KM para sua meta semanal.`;
+    } else if (stats.rawWeeklyDistance > 0) {
+      return `Continue firme, ${user.name.split(' ')[0]}! Cada KM conta para sua meta semanal.`;
+    } else {
+      return `Comece sua semana, ${user.name.split(' ')[0]}! Sua meta de ${WEEKLY_GOAL}km espera por você.`;
+    }
+  })();
 
   return (
     <div className="pb-40 bg-background-dark min-h-screen relative no-scrollbar overflow-y-auto animate-in fade-in duration-700">
@@ -137,7 +148,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
             </div>
         </section>
 
-        {/* AI Insight Widget - Coach Voice */}
+        {/* Performance Tip Widget (formerly AI Insight) */}
         <section className="relative group">
           <div className="absolute -inset-1.5 bg-gradient-to-r from-primary/50 to-accent-green/50 rounded-[3rem] blur opacity-15 group-hover:opacity-25 transition-all"></div>
           <div className="relative glass-card rounded-[3rem] p-10 overflow-hidden border border-white/10">
@@ -147,7 +158,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
                   <span className="material-symbols-outlined text-3xl">bolt</span>
                 </div>
                 <div>
-                  <h4 className="text-white text-[11px] font-black uppercase tracking-[0.3em] font-display">IA Coach Insight</h4>
+                  <h4 className="text-white text-[11px] font-black uppercase tracking-[0.3em] font-display">Dica de Performance</h4>
                   <div className="flex gap-1 mt-1">
                     <div className="w-1 h-1 rounded-full bg-primary animate-pulse"></div>
                     <div className="w-1 h-1 rounded-full bg-primary animate-pulse [animation-delay:0.2s]"></div>
@@ -157,7 +168,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
               </div>
             </div>
             <p className="text-white text-xl font-bold italic leading-snug font-lexend">
-              {isGeneratingInsight ? "Computando sua performance de hoje..." : aiInsight?.message || "Otimize seu ritmo hoje para alcançar o Lvl 5 até o final da semana."}
+              {performanceTip}
             </p>
           </div>
         </section>
@@ -221,23 +232,6 @@ const Dashboard: React.FC<DashboardProps> = ({ navigate, user, stats, lastActivi
           )}
         </section>
       </main>
-
-      {/* Floating Action Launcher */}
-      <div className="fixed bottom-28 left-0 w-full px-8 pointer-events-none z-50">
-        <button 
-          onClick={() => navigate(AppScreen.START_ACTIVITY)}
-          className="pointer-events-auto w-full h-24 bg-primary rounded-[3.5rem] shadow-[0_30px_80px_rgba(37,140,244,0.5)] flex items-center justify-between px-12 group active:scale-[0.97] transition-all relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-          <div className="flex flex-col items-start relative z-10">
-            <span className="text-white text-2xl font-black uppercase tracking-[0.1em] italic font-lexend">START MISSION</span>
-            <span className="text-[10px] text-blue-100 font-bold uppercase tracking-[0.3em] italic opacity-60">Ready to engage elite mode</span>
-          </div>
-          <div className="size-16 rounded-2xl bg-white/20 flex items-center justify-center shadow-inner transition-all group-hover:rotate-[15deg] group-hover:scale-110 relative z-10">
-            <span className="material-symbols-outlined text-white text-4xl font-black">rocket_launch</span>
-          </div>
-        </button>
-      </div>
 
       {showChallengeModal && (
         <ChallengeDetailModal 

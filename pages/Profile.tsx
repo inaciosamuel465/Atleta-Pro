@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AppScreen, UserProfile, Activity } from '../types';
-import { showSuccess, showError } from '../src/utils/toast'; // Importar funções de toast
+import { showSuccess, showError } from '../src/utils/toast';
 
 interface ProfileProps {
   navigate: (screen: AppScreen) => void;
@@ -9,7 +9,7 @@ interface ProfileProps {
   onUpdateUser: (updatedData: Partial<UserProfile>) => void;
   onSeedData?: () => void;
   onLogout?: () => void;
-  avatarGallery: string[]; // Nova prop para a galeria de avatares
+  avatarGallery: string[];
 }
 
 const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateUser, onSeedData, onLogout, avatarGallery }) => {
@@ -20,31 +20,22 @@ const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateU
   const [editData, setEditData] = useState({
     name: user.name,
     status: user.status,
-    avatar: user.avatar, // This will hold the URL or base64 string for pending upload
+    avatar: user.avatar,
     height: user.height,
     weight: user.weight,
     weeklyGoal: user.weeklyGoal || 20,
     monthlyGoal: user.monthlyGoal || 80
   });
 
-  // Separate state for the avatar URL input field in the edit modal
-  const [avatarUrlInput, setAvatarUrlInput] = useState(user.avatar);
-
-  // Sync avatarUrlInput with editData.avatar when editData.avatar is a URL
+  // Sync editData.avatar when user.avatar changes (e.g., after upload)
   useEffect(() => {
-    if (editData.avatar && !editData.avatar.startsWith('data:image/')) {
-      setAvatarUrlInput(editData.avatar);
-    } else if (editData.avatar && editData.avatar.startsWith('data:image/')) {
-      setAvatarUrlInput(''); // Clear input if a base64 image is pending upload
-    }
-  }, [editData.avatar]);
+    setEditData(prev => ({ ...prev, avatar: user.avatar }));
+  }, [user.avatar]);
 
   const handleSave = () => {
-    // If avatarUrlInput has a value, it takes precedence
-    const finalAvatar = avatarUrlInput || editData.avatar;
-    onUpdateUser({ ...editData, avatar: finalAvatar });
+    onUpdateUser(editData);
     setIsEditing(false);
-    showSuccess("Perfil atualizado com sucesso!"); // Toast de sucesso
+    showSuccess("Perfil atualizado com sucesso!");
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,28 +44,24 @@ const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateU
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64String = reader.result as string;
-        onUpdateUser({ avatar: base64String }); // Salva imediatamente
-        setEditData({ ...editData, avatar: base64String }); // Atualiza o estado local
-        setShowImagePicker(false); // Fecha o picker
-        showSuccess("Imagem de perfil selecionada!"); // Toast de sucesso
+        onUpdateUser({ avatar: base64String });
+        setEditData({ ...editData, avatar: base64String });
+        setShowImagePicker(false);
+        showSuccess("Imagem de perfil selecionada!");
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleSelectGalleryAvatar = (url: string) => {
-    onUpdateUser({ avatar: url }); // Salva imediatamente
-    setEditData({ ...editData, avatar: url }); // Atualiza o estado local
-    setShowImagePicker(false); // Fecha o picker
-    showSuccess("Imagem de perfil selecionada!"); // Toast de sucesso
+    onUpdateUser({ avatar: url });
+    setEditData({ ...editData, avatar: url });
+    setShowImagePicker(false);
+    showSuccess("Imagem de perfil selecionada!");
   };
 
   const handleLogout = async () => {
-    // Substituindo o confirm() por um toast de confirmação
     if (onLogout) {
-      // Poderíamos usar um toast com botões de ação aqui, mas para simplicidade, vamos direto
-      // com a ação de logout e um toast de sucesso/erro.
-      // Para uma confirmação mais robusta, seria necessário um modal customizado.
       onLogout();
     }
   };
@@ -118,14 +105,14 @@ const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateU
            </div>
            <div className="grid grid-cols-2 gap-4">
               <div className="bg-surface-dark/60 rounded-[2.5rem] p-7 border border-white/5 space-y-3">
-                 <p className="text-slate-600 text-[9px] font-black uppercase tracking-widest italic">Meta Semanal</p>
+                 <p className="text-slate-600 text-[9px] font-black uppercase tracking-widest italic">Meta Semanal (Km)</p>
                  <div className="flex items-baseline gap-2">
                     <span className="text-white text-4xl font-black italic tracking-tighter">{user.weeklyGoal || 20}</span>
                     <span className="text-slate-600 text-xs font-bold">KM</span>
                  </div>
               </div>
               <div className="bg-surface-dark/60 rounded-[2.5rem] p-7 border border-white/5 space-y-3">
-                 <p className="text-slate-600 text-[9px] font-black uppercase tracking-widest italic">Meta Mensal</p>
+                 <p className="text-slate-600 text-[9px] font-black uppercase tracking-widest italic">Meta Mensal (Km)</p>
                  <div className="flex items-baseline gap-2">
                     <span className="text-white text-4xl font-black italic tracking-tighter">{user.monthlyGoal || 80}</span>
                     <span className="text-slate-600 text-xs font-bold">KM</span>
@@ -150,7 +137,7 @@ const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateU
               {avatarGallery.map((url, i) => (
                 <button 
                   key={i} 
-                  onClick={() => handleSelectGalleryAvatar(url)} // Chama a nova função
+                  onClick={() => handleSelectGalleryAvatar(url)}
                   className="size-16 rounded-2xl overflow-hidden border-2 border-transparent hover:border-primary transition-all"
                 >
                   <img src={url} className="size-full object-cover" />
@@ -186,14 +173,7 @@ const Profile: React.FC<ProfileProps> = ({ navigate, user, activities, onUpdateU
             </div>
 
             <div className="space-y-6 pb-4">
-              <div className="space-y-2">
-                <p className="text-slate-500 text-[9px] font-black uppercase ml-2 italic">Link da Foto de Perfil</p>
-                <input 
-                  className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white text-xs outline-none focus:border-primary" 
-                  value={avatarUrlInput} 
-                  onChange={e => setAvatarUrlInput(e.target.value)} 
-                />
-              </div>
+              {/* Removido: Link da Foto de Perfil */}
               <div className="space-y-2">
                 <p className="text-slate-500 text-[9px] font-black uppercase ml-2 italic">Nome</p>
                 <input className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white font-black italic outline-none" value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} />

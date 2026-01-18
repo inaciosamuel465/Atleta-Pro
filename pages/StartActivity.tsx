@@ -117,21 +117,7 @@ const StartActivity: React.FC<StartActivityProps> = ({ onBack, onStart }) => {
            </div>
         </section>
 
-        {/* SPOTIFY QUICK SELECT */}
-        <section className="bg-emerald-500/10 rounded-[2.5rem] p-8 border border-emerald-500/20 flex items-center justify-between group">
-           <div className="flex items-center gap-5">
-              <div className="size-14 rounded-2xl bg-emerald-500 flex items-center justify-center text-black shadow-lg shadow-emerald-500/20 rotate-3 group-hover:rotate-0 transition-transform">
-                 <span className="material-symbols-outlined text-3xl font-black">music_note</span>
-              </div>
-              <div>
-                 <h4 className="text-white text-lg font-black italic uppercase tracking-tight">Audio Hub</h4>
-                 <p className="text-emerald-500/60 text-[10px] font-bold uppercase tracking-widest">Playlist: Power Run 160BPM</p>
-              </div>
-           </div>
-           <button className="size-12 rounded-full bg-white/5 flex items-center justify-center text-white active:rotate-180 transition-transform">
-              <span className="material-symbols-outlined">sync</span>
-           </button>
-        </section>
+        {/* Removido: SPOTIFY QUICK SELECT */}
       </main>
 
       <div className="fixed bottom-0 left-0 w-full p-8 bg-gradient-to-t from-background-dark via-background-dark/90 to-transparent z-40 pointer-events-none">
