@@ -1,22 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { AppScreen, UserProfile } from '../types';
-import { doc, setDoc, collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { AppScreen, UserProfile, Challenge } from '../types';
+import { doc, setDoc, collection, getDocs, query, orderBy, addDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { showSuccess, showError } from '../src/utils/toast';
 import AdminEditUser from '../components/AdminEditUser';
+import AdminEditChallenge from '../components/AdminEditChallenge'; // Importar o novo componente
 
 interface AdminDashboardProps {
   navigate: (screen: AppScreen) => void;
   avatarGallery: string[];
   workoutGallery: string[];
   onUpdateAnyUser: (uid: string, updatedData: Partial<UserProfile>) => void;
+  challenges: Challenge[]; // Receber a lista de desafios
+  onUpdateChallenge: (challengeId: string, updatedData: Partial<Challenge>) => void; // Função para atualizar desafio
+  onDeleteChallenge: (challengeId: string) => void; // Função para deletar desafio
 }
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate, avatarGallery, workoutGallery, onUpdateAnyUser }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate, avatarGallery, workoutGallery, onUpdateAnyUser, challenges, onUpdateChallenge, onDeleteChallenge }) => {
   const [newAvatarUrl, setNewAvatarUrl] = useState('');
   const [newWorkoutUrl, setNewWorkoutUrl] = useState('');
   const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
   const [selectedUserForEdit, setSelectedUserForEdit] = useState<UserProfile | null>(null);
+
+  // Estados para o novo desafio
+  const [newChallengeTitle, setNewChallengeTitle] = useState('');
+  const [newChallengeDescription, setNewChallengeDescription] = useState('');
+  const [newChallengeIcon, setNewChallengeIcon] = useState('');
+  const [newChallengeColor, setNewChallengeColor] = useState('');
+  const [newChallengeProgress, setNewChallengeProgress] = useState('0% Concluído');
+  const [selectedChallengeForEdit, setSelectedChallengeForEdit] = useState<Challenge | null>(null);
+
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -86,6 +99,40 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate, avatarGallery
     }
   };
 
+  const handleAddChallenge = async () => {
+    if (!newChallengeTitle || !newChallengeDescription || !newChallengeIcon || !newChallengeColor) {
+      showError("Preencha todos os campos do desafio.");
+      return;
+    }
+
+    try {
+      const challengesRef = collection(db, "challenges");
+      await addDoc(challengesRef, {
+        title: newChallengeTitle,
+        description: newChallengeDescription,
+        icon: newChallengeIcon,
+        color: newChallengeColor,
+        progress: newChallengeProgress,
+      });
+      showSuccess("Desafio adicionado com sucesso!");
+      // Limpar formulário
+      setNewChallengeTitle('');
+      setNewChallengeDescription('');
+      setNewChallengeIcon('');
+      setNewChallengeColor('');
+      setNewChallengeProgress('0% Concluído');
+    } catch (error) {
+      console.error("Erro ao adicionar desafio:", error);
+      showError("Erro ao adicionar desafio.");
+    }
+  };
+
+  const handleConfirmDeleteChallenge = (challengeId: string) => {
+    if (window.confirm("Tem certeza que deseja deletar este desafio? Esta ação não pode ser desfeita.")) {
+      onDeleteChallenge(challengeId);
+    }
+  };
+
   return (
     <div className="bg-[#101922] min-h-screen pb-40 no-scrollbar overflow-y-auto">
       <header className="flex items-center px-6 pt-10 pb-6 justify-between border-b border-white/5 sticky top-0 bg-[#101922]/90 backdrop-blur-xl z-20">
@@ -122,6 +169,92 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate, avatarGallery
               </div>
             )) : (
               <p className="text-slate-500 text-center text-sm">Nenhum usuário encontrado.</p>
+            )}
+          </div>
+        </section>
+
+        {/* Gerenciamento de Desafios */}
+        <section className="space-y-6 bg-surface-dark rounded-[2.5rem] p-8 border border-white/5">
+          <h3 className="text-white text-xl font-black tracking-tight italic uppercase">Gerenciar Desafios</h3>
+          
+          {/* Formulário para Adicionar Novo Desafio */}
+          <div className="space-y-4 mb-6 p-6 bg-black/40 rounded-2xl border border-white/5">
+            <h4 className="text-white text-lg font-black italic tracking-tighter uppercase mb-4">Novo Desafio</h4>
+            <input 
+              type="text"
+              placeholder="Título do Desafio"
+              className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white text-sm outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold"
+              value={newChallengeTitle}
+              onChange={(e) => setNewChallengeTitle(e.target.value)}
+            />
+            <textarea 
+              placeholder="Descrição do Desafio"
+              className="w-full h-24 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold resize-none"
+              value={newChallengeDescription}
+              onChange={(e) => setNewChallengeDescription(e.target.value)}
+            />
+            <input 
+              type="text"
+              placeholder="Ícone (Material Symbols, ex: directions_run)"
+              className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white text-sm outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold"
+              value={newChallengeIcon}
+              onChange={(e) => setNewChallengeIcon(e.target.value)}
+            />
+            <input 
+              type="text"
+              placeholder="Cor (Tailwind, ex: blue-500)"
+              className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white text-sm outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold"
+              value={newChallengeColor}
+              onChange={(e) => setNewChallengeColor(e.target.value)}
+            />
+            <input 
+              type="text"
+              placeholder="Progresso Inicial (Ex: 0% Concluído)"
+              className="w-full h-12 bg-black/40 border border-white/10 rounded-xl px-4 text-white text-sm outline-none focus:border-primary transition-all placeholder:text-slate-600 font-bold"
+              value={newChallengeProgress}
+              onChange={(e) => setNewChallengeProgress(e.target.value)}
+            />
+            <button 
+              onClick={handleAddChallenge}
+              className="w-full h-14 bg-primary text-white rounded-xl font-black uppercase tracking-widest active:scale-95 transition-all shadow-lg mt-4"
+            >
+              Adicionar Desafio
+            </button>
+          </div>
+
+          {/* Lista de Desafios Existentes */}
+          <div className="space-y-4 max-h-80 overflow-y-auto no-scrollbar pr-1">
+            {challenges.length > 0 ? challenges.map((challenge) => (
+              <div 
+                key={challenge.id} 
+                className="flex items-center justify-between bg-black/40 p-4 rounded-2xl border border-white/5 hover:bg-white/5 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`size-10 rounded-xl flex items-center justify-center bg-${challenge.color}/20 text-${challenge.color.split('-')[0]}-${challenge.color.split('-')[1]}`}>
+                    <span className="material-symbols-outlined text-xl">{challenge.icon}</span>
+                  </div>
+                  <div>
+                    <p className="text-white font-bold text-sm">{challenge.title}</p>
+                    <p className="text-slate-500 text-xs">{challenge.progress}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setSelectedChallengeForEdit(challenge)}
+                    className="px-4 py-2 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all"
+                  >
+                    Editar
+                  </button>
+                  <button 
+                    onClick={() => handleConfirmDeleteChallenge(challenge.id)}
+                    className="px-4 py-2 rounded-xl bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all"
+                  >
+                    Deletar
+                  </button>
+                </div>
+              </div>
+            )) : (
+              <p className="text-slate-500 text-center text-sm">Nenhum desafio encontrado.</p>
             )}
           </div>
         </section>
@@ -205,6 +338,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate, avatarGallery
           avatarGallery={avatarGallery}
           onSave={onUpdateAnyUser}
           onCancel={() => setSelectedUserForEdit(null)}
+        />
+      )}
+
+      {selectedChallengeForEdit && (
+        <AdminEditChallenge
+          challenge={selectedChallengeForEdit}
+          onSave={onUpdateChallenge}
+          onCancel={() => setSelectedChallengeForEdit(null)}
         />
       )}
     </div>

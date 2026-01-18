@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, onSnapshot, collection, query, orderBy, setDoc, addDoc, serverTimestamp, deleteDoc } from 'firebase/firestore'; // Importar deleteDoc
+import { doc, onSnapshot, collection, query, orderBy, setDoc, addDoc, serverTimestamp, deleteDoc, getDocs } from 'firebase/firestore'; // Importar getDocs para verificar coleção
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { auth, db, storage } from './firebase';
 import { showSuccess, showError } from './src/utils/toast';
@@ -45,7 +45,7 @@ const App: React.FC = () => {
 
   // --- FIREBASE AUTH & DATA LISTENER ---
   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         // 1. Ouvir mudanças no Perfil do Usuário em Tempo Real
         const userDocRef = doc(db, "users", firebaseUser.uid);
@@ -114,12 +114,44 @@ const App: React.FC = () => {
 
         // 4. Ouvir Desafios em Tempo Real
         const challengesRef = collection(db, "challenges");
-        const unsubChallenges = onSnapshot(challengesRef, (snapshot) => {
+        const unsubChallenges = onSnapshot(challengesRef, async (snapshot) => {
           const loadedChallenges: Challenge[] = [];
           snapshot.forEach((doc) => {
             loadedChallenges.push({ id: doc.id, ...doc.data() } as Challenge);
           });
           setChallenges(loadedChallenges);
+
+          // Se a coleção de desafios estiver vazia, adicione alguns desafios padrão
+          if (loadedChallenges.length === 0) {
+            const defaultChallenges: Omit<Challenge, 'id'>[] = [
+              {
+                title: 'Maratona de Iniciante',
+                description: 'Complete 10km em uma semana para desbloquear esta medalha.',
+                progress: '0% Concluído',
+                icon: 'directions_run',
+                color: 'blue-500'
+              },
+              {
+                title: 'Desafio de Velocidade',
+                description: 'Mantenha um ritmo médio abaixo de 5\'30"/km por 3km.',
+                progress: '0% Concluído',
+                icon: 'speed',
+                color: 'emerald-500'
+              },
+              {
+                title: 'Caminhada da Natureza',
+                description: 'Faça uma caminhada de 5km em terreno de trilha.',
+                progress: '0% Concluído',
+                icon: 'hiking',
+                color: 'orange-500'
+              },
+            ];
+
+            for (const challenge of defaultChallenges) {
+              await addDoc(challengesRef, challenge);
+            }
+            console.log("Desafios padrão adicionados ao Firestore.");
+          }
         });
 
 
@@ -401,6 +433,39 @@ const App: React.FC = () => {
     }
   };
 
+  // Função para atualizar um desafio (usada pelo AdminEditChallenge)
+  const handleUpdateChallenge = async (challengeId: string, updatedData: Partial<Challenge>) => {
+    if (isAdmin) {
+      try {
+        const challengeDocRef = doc(db, "challenges", challengeId);
+        await setDoc(challengeDocRef, updatedData, { merge: true });
+        showSuccess("Desafio atualizado com sucesso!");
+      } catch (error) {
+        console.error("Erro ao atualizar desafio:", error);
+        showError("Erro ao atualizar desafio.");
+      }
+    } else {
+      showError("Você não tem permissão para editar desafios.");
+    }
+  };
+
+  // Função para deletar um desafio (usada pelo AdminDashboard)
+  const handleDeleteChallenge = async (challengeId: string) => {
+    if (isAdmin) {
+      try {
+        const challengeDocRef = doc(db, "challenges", challengeId);
+        await deleteDoc(challengeDocRef);
+        showSuccess("Desafio deletado com sucesso!");
+      } catch (error) {
+        console.error("Erro ao deletar desafio:", error);
+        showError("Erro ao deletar desafio.");
+      }
+    } else {
+      showError("Você não tem permissão para deletar desafios.");
+    }
+  };
+
+
   if (authLoading) {
       return <div className="h-screen w-full bg-background-dark flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
@@ -445,7 +510,15 @@ const App: React.FC = () => {
       case AppScreen.MUSIC:
         return <Music onBack={() => navigate(AppScreen.DASHBOARD)} />;
       case AppScreen.ADMIN_DASHBOARD:
-        return isAdmin ? <AdminDashboard navigate={navigate} avatarGallery={avatarGallery} workoutGallery={workoutGallery} onUpdateAnyUser={handleUpdateAnyUser} /> : <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} aiInsight={aiInsight} aiLoading={aiLoading} challenges={challenges} />;
+        return isAdmin ? <AdminDashboard 
+          navigate={navigate} 
+          avatarGallery={avatarGallery} 
+          workoutGallery={workoutGallery} 
+          onUpdateAnyUser={handleUpdateAnyUser} 
+          challenges={challenges} // Passar desafios
+          onUpdateChallenge={handleUpdateChallenge} // Passar função de update
+          onDeleteChallenge={handleDeleteChallenge} // Passar função de delete
+        /> : <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} aiInsight={aiInsight} aiLoading={aiLoading} challenges={challenges} />;
       default:
         return <Dashboard navigate={navigate} user={user} stats={stats} lastActivity={activities[0]} isAdmin={isAdmin} aiInsight={aiInsight} aiLoading={aiLoading} challenges={challenges} />;
     }
