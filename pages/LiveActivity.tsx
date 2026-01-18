@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import L from 'leaflet';
 import { Activity, UserProfile, Lap } from '../types';
+import { APP_LOGO } from '../constants'; // Importar o logo
 
 interface LiveActivityProps {
   onFinish: (data: Partial<Activity>) => void;
@@ -308,109 +309,91 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
       {!isTreadmillMode && <div id="live-map" ref={mapContainerRef} className="absolute inset-0 z-0"></div>}
       <div className="absolute inset-0 bg-gradient-to-b from-background-light/80 via-transparent to-background-light/95 z-10 pointer-events-none"></div>
 
-      {/* GPS Signal Indicator (only if not treadmill mode) */}
-      {!isTreadmillMode && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-surface-light/80 backdrop-blur-md px-3 py-1 rounded-full border border-surface-medium">
-          <div className={`size-2 rounded-full ${gpsAccuracy && gpsAccuracy < 15 ? 'bg-green-500' : gpsAccuracy && gpsAccuracy < 30 ? 'bg-yellow-500' : 'bg-red-500'} animate-pulse`}></div>
-          <span className="text-[9px] font-black uppercase tracking-widest text-text-light">GPS {gpsAccuracy ? Math.round(gpsAccuracy) + 'm' : 'Wait...'}</span>
-        </div>
-      )}
-
-      <header className="px-8 pt-16 pb-4 flex justify-between items-end z-20 relative">
-        <div className="space-y-1">
-          <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em] italic block animate-pulse">
-            {isPaused ? 'PAUSADO' : (isTreadmillMode ? 'ESTEIRA' : 'GRAVANDO')}
-          </span>
-          <h3 className="text-6xl font-black italic tracking-tighter font-lexend leading-none drop-shadow-lg">
-            {currentTotalDistance.toFixed(2)} <span className="text-text-light text-lg not-italic font-bold">KM</span>
-          </h3>
-        </div>
+      {/* Header - Logo, GPS, Time */}
+      <header className="absolute top-0 left-0 right-0 z-30 p-6 flex items-center justify-between bg-background-light/80 backdrop-blur-md border-b border-surface-medium rounded-b-[2.5rem] shadow-lg">
+        <img src={APP_LOGO} alt="Logo" className="h-10 w-auto object-contain drop-shadow-[0_0_10px_rgba(233,84,32,0.4)]" />
         
-        <div className="flex gap-3">
-            <button 
-                onClick={() => setShowMusicMenu(true)}
-                className="size-12 rounded-2xl flex items-center justify-center border transition-all active:scale-95 bg-[#1DB954] border-[#1DB954] text-white shadow-[0_0_20px_rgba(29,185,84,0.4)]"
-            >
-                <span className="material-symbols-outlined font-black">music_note</span>
-            </button>
-
-            <button 
-            onClick={() => setVoiceEnabled(!voiceEnabled)}
-            className={`size-12 rounded-2xl flex items-center justify-center border transition-all active:scale-95 ${voiceEnabled ? 'bg-primary border-primary text-white shadow-[0_0_20px_rgba(233,84,32,0.4)]' : 'bg-surface-light/80 backdrop-blur-md border-surface-medium text-text-light'}`}
-            >
-            <span className="material-symbols-outlined">{voiceEnabled ? 'volume_up' : 'volume_off'}</span>
-            </button>
+        <div className="flex items-center gap-3">
+          {!isTreadmillMode && (
+            <div className="flex items-center gap-2 bg-surface-light/80 backdrop-blur-md px-3 py-1 rounded-full border border-surface-medium">
+              <div className={`size-2 rounded-full ${gpsAccuracy && gpsAccuracy < 15 ? 'bg-accent-green' : gpsAccuracy && gpsAccuracy < 30 ? 'bg-accent-orange' : 'bg-accent-red'} animate-pulse`}></div>
+              <span className="text-[9px] font-black uppercase tracking-widest text-text-light">GPS {gpsAccuracy ? Math.round(gpsAccuracy) + 'm' : 'Wait...'}</span>
+            </div>
+          )}
+          <div className="bg-surface-light/80 backdrop-blur-md px-4 py-2 rounded-full border border-surface-medium">
+            <span className="text-text-dark text-sm font-black italic font-lexend">{timeStr}</span>
+          </div>
         </div>
       </header>
 
-      {/* Center Feedback Area / Manual Distance Input */}
-      <div className="flex-1 z-20 flex items-center justify-center pointer-events-none">
-         {isTreadmillMode ? (
-            <div className="bg-surface-light/80 backdrop-blur-xl px-8 py-4 rounded-[2rem] border border-surface-medium animate-in zoom-in fade-in duration-500 pointer-events-auto">
-               <p className="text-text-dark text-xl font-black italic uppercase tracking-tighter mb-2 text-center">Distância Manual</p>
-               <input
-                  type="number"
-                  step="0.1"
-                  value={manualDistance.toFixed(1)}
-                  onChange={(e) => setManualDistance(parseFloat(e.target.value))}
-                  className="w-32 bg-transparent text-center text-5xl font-black text-text-dark italic outline-none border-b-2 border-primary/20 focus:border-primary pb-3 transition-all"
-               />
-            </div>
-         ) : (
-            <div className="flex flex-col items-center gap-4">
-                {lastKmMarked > 0 && (currentTotalDistance - lastKmMarked < 0.1) && (
-                    <div className="bg-surface-light/80 backdrop-blur-xl px-8 py-4 rounded-[2rem] border border-surface-medium animate-in zoom-in fade-in duration-500">
-                       <p className="text-text-dark text-2xl font-black italic uppercase tracking-tighter">KM {lastKmMarked}</p>
-                    </div>
-                )}
-                {/* Current Speed Display */}
-                {!isPaused && currentSpeed > 0.5 && ( // Only show if not paused and moving
-                    <div className="bg-surface-light/80 backdrop-blur-xl px-8 py-4 rounded-[2rem] border border-surface-medium animate-in zoom-in fade-in duration-500">
-                        <p className="text-text-dark text-xl font-black italic uppercase tracking-tighter mb-2 text-center">Velocidade Atual</p>
-                        <p className="text-center text-5xl font-black text-text-dark italic font-lexend">{currentSpeed.toFixed(1)} <span className="text-lg text-text-light not-italic font-bold">KM/H</span></p>
-                    </div>
-                )}
-            </div>
-         )}
+      {/* Main Stats - Distance */}
+      <div className="flex-1 z-20 flex flex-col items-center justify-center pt-32 pb-40 pointer-events-none">
+        <div className="text-center">
+          <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em] italic block mb-2">
+            {isPaused ? 'PAUSADO' : (isTreadmillMode ? 'ESTEIRA' : 'GRAVANDO')}
+          </p>
+          <h3 className="text-8xl font-black italic tracking-tighter font-lexend leading-none drop-shadow-lg text-text-dark">
+            {currentTotalDistance.toFixed(2)} <span className="text-text-light text-2xl not-italic font-bold">KM</span>
+          </h3>
+        </div>
       </div>
 
-      {/* Control Panel */}
-      <section className="bg-surface-light/80 backdrop-blur-[40px] rounded-t-[3.5rem] p-8 pb-16 z-30 shadow-[0_-20px_60px_rgba(0,0,0,0.2)] border-t border-surface-medium">
-        <div className="grid grid-cols-3 gap-8 mb-10 px-4"> {/* Alterado para 3 colunas */}
+      {/* Control Panel - Pace, HR, Speed, Action Buttons */}
+      <section className="bg-surface-light/80 backdrop-blur-[40px] rounded-t-[3.5rem] p-8 pb-safe z-30 shadow-[0_-20px_60px_rgba(0,0,0,0.2)] border-t border-surface-medium">
+        <div className="grid grid-cols-3 gap-4 mb-8">
            <div className="text-center">
               <p className="text-text-light text-[10px] font-black uppercase tracking-widest mb-1 italic">Ritmo Médio</p>
-              <h4 className="text-4xl font-black italic tracking-tighter font-lexend text-text-dark">{paceStr}</h4>
+              <h4 className="text-3xl font-black italic tracking-tighter font-lexend text-text-dark">{paceStr}</h4>
            </div>
            <div className="text-center relative">
               <div className="absolute left-0 top-2 bottom-2 w-px bg-surface-medium"></div>
-              <p className="text-text-light text-[10px] font-black uppercase tracking-widest mb-1 italic">Cronômetro</p>
-              <h4 className="text-4xl font-black italic tracking-tighter font-lexend text-text-dark">{timeStr}</h4>
+              <p className="text-text-light text-[10px] font-black uppercase tracking-widest mb-1 italic">Velocidade</p>
+              <h4 className="text-3xl font-black italic tracking-tighter font-lexend text-text-dark">
+                {currentSpeed.toFixed(1)} <span className="text-xs text-text-light not-italic font-bold">KM/H</span>
+              </h4>
            </div>
            <div className="text-center relative">
               <div className="absolute left-0 top-2 bottom-2 w-px bg-surface-medium"></div>
               <p className="text-text-light text-[10px] font-black uppercase tracking-widest mb-1 italic">F. Cardíaca</p>
-              <h4 className="text-4xl font-black italic tracking-tighter font-lexend text-text-dark">
-                {currentHeartRate > 0 ? currentHeartRate : '--'} <span className="text-lg text-text-light not-italic font-bold">BPM</span>
+              <h4 className="text-3xl font-black italic tracking-tighter font-lexend text-text-dark">
+                {currentHeartRate > 0 ? currentHeartRate : '--'} <span className="text-xs text-text-light not-italic font-bold">BPM</span>
               </h4>
            </div>
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex justify-center gap-4 mt-8">
            <button 
               onClick={() => setIsPaused(!isPaused)}
-              className={`h-24 flex-1 rounded-[2.5rem] border-2 flex flex-col items-center justify-center gap-1 transition-all active:scale-95 ${isPaused ? 'bg-primary border-primary text-white shadow-2xl shadow-primary/30' : 'bg-surface-light border-surface-medium text-text-dark hover:bg-surface-medium'}`}
+              className={`size-20 rounded-full flex items-center justify-center transition-all active:scale-95 ${isPaused ? 'bg-primary text-white shadow-2xl shadow-primary/30' : 'bg-surface-light border border-surface-medium text-text-dark hover:bg-surface-medium'}`}
            >
               <span className="material-symbols-outlined text-4xl font-black">{isPaused ? 'play_arrow' : 'pause'}</span>
-              <span className="text-[9px] font-black uppercase tracking-widest italic">{isPaused ? 'Retomar' : 'Pausar'}</span>
            </button>
            
            <button 
               onClick={handleFinishWorkout}
-              className="h-24 flex-1 rounded-[2.5rem] bg-primary text-white flex flex-col items-center justify-center gap-1 active:scale-95 shadow-2xl transition-all"
+              className="size-20 rounded-full bg-primary text-white flex items-center justify-center active:scale-95 shadow-2xl shadow-primary/30 transition-all"
            >
               <span className="material-symbols-outlined text-4xl font-black">stop</span>
-              <span className="text-[9px] font-black uppercase tracking-widest italic">Finalizar</span>
            </button>
+        </div>
+
+        {/* Quick Toggles for Music/Voice */}
+        <div className="flex justify-center gap-4 mt-6">
+            <button 
+                onClick={() => setShowMusicMenu(true)}
+                className="px-6 py-3 rounded-full flex items-center gap-2 border transition-all active:scale-95 bg-[#1DB954]/10 border-[#1DB954]/20 text-[#1DB954] text-[10px] font-black uppercase tracking-widest"
+            >
+                <span className="material-symbols-outlined text-xl">music_note</span>
+                Música
+            </button>
+
+            <button 
+            onClick={() => setVoiceEnabled(!voiceEnabled)}
+            className={`px-6 py-3 rounded-full flex items-center gap-2 border transition-all active:scale-95 ${voiceEnabled ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-surface-light border-surface-medium text-text-light'} text-[10px] font-black uppercase tracking-widest`}
+            >
+            <span className="material-symbols-outlined text-xl">{voiceEnabled ? 'volume_up' : 'volume_off'}</span>
+            Voz
+            </button>
         </div>
       </section>
 
@@ -433,10 +416,10 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
                     </button>
                     <div className="grid grid-cols-2 gap-3">
                         <button onClick={() => handleOpenSpotify('Workout Motivation')} className="h-20 rounded-2xl bg-surface-light border border-surface-medium flex flex-col items-center justify-center gap-1 hover:bg-surface-medium">
-                            <span className="material-symbols-outlined text-orange-500">local_fire_department</span> <span className="text-[9px] font-black uppercase text-text-dark">Power Mix</span>
+                            <span className="material-symbols-outlined text-accent-orange">local_fire_department</span> <span className="text-[9px] font-black uppercase text-text-dark">Power Mix</span>
                         </button>
                         <button onClick={() => handleOpenSpotify('Running Hits 160BPM')} className="h-20 rounded-2xl bg-surface-light border border-surface-medium flex flex-col items-center justify-center gap-1 hover:bg-surface-medium">
-                             <span className="material-symbols-outlined text-blue-500">bolt</span> <span className="text-[9px] font-black uppercase text-text-dark">160 BPM</span>
+                             <span className="material-symbols-outlined text-primary">bolt</span> <span className="text-[9px] font-black uppercase text-text-dark">160 BPM</span>
                         </button>
                     </div>
                 </div>
