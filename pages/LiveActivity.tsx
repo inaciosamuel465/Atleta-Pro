@@ -173,8 +173,8 @@ const LiveActivity: React.FC<LiveActivityProps> = ({ onFinish, workoutConfig, us
           const newCoord: [number, number] = [latitude, longitude];
           setGpsAccuracy(accuracy);
 
-          // Filtro de Precisão: Ignora pontos com precisão pior que 50 metros
-          if (accuracy > 50) return;
+          // Filtro de Precisão: Relaxado para 100 metros
+          if (accuracy > 100) return;
 
           setGpsDistance(prevGpsDistance => {
             if (lastPosRef.current) {
